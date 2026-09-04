@@ -1,7 +1,7 @@
 import React from 'react';
-import { X, ArrowRight, Compass, Layers, BookOpen, UserCheck, Sparkles } from 'lucide-react';
+import { X, ArrowRight, Compass, Layers, BookOpen, UserCheck, Calendar } from 'lucide-react';
 
-export default function NavDrawer({ isOpen, onClose, currentPage, onNavigate, onOpenWaitingList }) {
+export default function NavDrawer({ isOpen, onClose, currentPage, onNavigate, onOpenBooking }) {
   if (!isOpen) return null;
 
   const navItems = [
@@ -51,10 +51,10 @@ export default function NavDrawer({ isOpen, onClose, currentPage, onNavigate, on
             className="btn btn-primary"
             onClick={() => {
               onClose();
-              onOpenWaitingList();
+              onOpenBooking();
             }}
           >
-            <Sparkles size={16} /> Join Waiting List
+            <Calendar size={16} /> Book Now
           </button>
           <div style={{ marginTop: '14px', textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)' }}>
             Psychological education for the modern era.

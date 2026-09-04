@@ -11,7 +11,7 @@ export default function JournalPage({ onSelectArticle }) {
   const featuredArticle = ARTICLES_DATA.find(a => a.id === 'architecture-of-empathy') || ARTICLES_DATA[0];
 
   const filteredArticles = ARTICLES_DATA.filter((art) => {
-    if (art.id === featuredArticle.id) return false; // Show in recent publications
+    if (art.id === featuredArticle.id && !searchQuery) return false; // Show in featured if no active search
     const matchesSearch = 
       art.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
       art.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -23,13 +23,11 @@ export default function JournalPage({ onSelectArticle }) {
   });
 
   return (
-    <div className="page-content">
+    <div className="page-wrapper">
       {/* Header */}
-      <section style={{ marginBottom: '28px' }}>
-        <h1 className="page-title" style={{ fontSize: '32px', marginBottom: '12px' }}>
-          Journal & Resources
-        </h1>
-        <p className="page-subtitle" style={{ marginBottom: '24px' }}>
+      <section className="section-header-center">
+        <h1 className="page-title">Journal & Resources</h1>
+        <p className="page-subtitle max-width-sub">
           Explore our curated collection of clinical insights, psychological frameworks, and mindful practices designed for the modern professional.
         </p>
 
@@ -60,7 +58,7 @@ export default function JournalPage({ onSelectArticle }) {
       </section>
 
       {/* Featured Insight Card */}
-      {(!searchQuery || featuredArticle.title.toLowerCase().includes(searchQuery.toLowerCase())) && (
+      {(!searchQuery || featuredArticle.title.toLowerCase().includes(searchQuery.toLowerCase())) && activeTopic === 'All Topics' && (
         <div 
           className="featured-journal-card"
           onClick={() => onSelectArticle(featuredArticle)}
@@ -68,28 +66,34 @@ export default function JournalPage({ onSelectArticle }) {
           <img 
             src={featuredArticle.image} 
             alt={featuredArticle.title} 
+            className="featured-journal-img"
           />
           <div className="featured-journal-overlay">
             <span className="featured-badge">{featuredArticle.category}</span>
             <h2 className="featured-journal-title">
               {featuredArticle.title}
             </h2>
+            <p className="featured-journal-excerpt">
+              {featuredArticle.excerpt}
+            </p>
           </div>
         </div>
       )}
 
       {/* Recent Publications */}
-      <section>
-        <h2 className="page-title" style={{ fontSize: '26px', marginBottom: '20px' }}>
-          Recent Publications
-        </h2>
+      <section className="section-container" style={{ marginTop: '36px' }}>
+        <div className="section-header">
+          <h2 className="section-title">
+            Recent Publications
+          </h2>
+        </div>
 
         {filteredArticles.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-            No articles found matching your search.
+          <div className="empty-state-box">
+            No articles found matching your criteria.
           </div>
         ) : (
-          <div>
+          <div className="publications-grid">
             {filteredArticles.map((art) => (
               <div 
                 key={art.id} 
