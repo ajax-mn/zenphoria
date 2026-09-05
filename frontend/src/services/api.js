@@ -1,14 +1,19 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// Automatically normalize API base URL so /api is never duplicated whether VITE_API_URL or VITE_API is used
+const rawEnvUrl = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API || 'http://localhost:8000').trim().replace(/\/+$/, '');
+const API_BASE_URL = rawEnvUrl.replace(/(\/api)+$/i, '') + '/api';
 
 export const api = {
   // Book session submission
   async joinWaitingList(data) {
     try {
-      const res = await fetch(`${API_URL}/api/bookings`, {
+      const res = await fetch(`${API_BASE_URL}/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
       return await res.json();
     } catch (err) {
       console.warn('Backend unavailable, handled gracefully:', err);
@@ -24,6 +29,9 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
       return await res.json();
     } catch (err) {
       console.warn('Backend unavailable, handled gracefully:', err);
@@ -37,8 +45,11 @@ export const api = {
       const params = new URLSearchParams();
       if (topic && topic !== 'All Topics') params.append('topic', topic);
       if (search) params.append('search', search);
-      
+
       const res = await fetch(`${API_BASE_URL}/articles?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
       return await res.json();
     } catch (err) {
       console.warn('Backend unavailable, fallback to local data:', err);
@@ -50,6 +61,9 @@ export const api = {
   async getPillars() {
     try {
       const res = await fetch(`${API_BASE_URL}/pillars`);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
       return await res.json();
     } catch (err) {
       console.warn('Backend unavailable, fallback to local data:', err);
@@ -57,3 +71,5 @@ export const api = {
     }
   }
 };
+
+
