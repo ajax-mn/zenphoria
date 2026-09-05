@@ -4,7 +4,7 @@ export const api = {
   // Book session submission
   async joinWaitingList(data) {
     try {
-      const res = await fetch(`${API_BASE_URL}/bookings`, {
+      const res = await fetch(`${API_URL}/api/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
