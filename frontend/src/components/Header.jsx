@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Calendar } from 'lucide-react';
+import { Menu, Calendar, ShieldCheck } from 'lucide-react';
 
 export default function Header({ onOpenMenu, onGoHome, currentPage, onNavigate, onOpenBooking }) {
   const navLinks = [
@@ -7,7 +7,9 @@ export default function Header({ onOpenMenu, onGoHome, currentPage, onNavigate, 
     { id: 'pillars', label: 'The Five Pillars' },
     { id: 'assessment', label: 'Consultation' },
     { id: 'journal', label: 'Journal & Resources' },
+    { id: 'admin', label: 'Admin' },
   ];
+
 
   return (
     <header className="site-header">

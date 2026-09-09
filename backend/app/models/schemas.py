@@ -40,3 +40,26 @@ class Article(BaseModel):
     image: str
     excerpt: str
     content: str
+
+class AdminLoginRequest(BaseModel):
+    username: str = Field(..., example="admin")
+    password: str = Field(..., example="zenphoria_admin")
+
+class AdminLoginResponse(BaseModel):
+    success: bool
+    token: str
+    username: str
+    message: str
+
+class AdminClientUpdate(BaseModel):
+    status: Optional[str] = None
+    notes: Optional[str] = None
+    cadence: Optional[str] = None
+    focus_area: Optional[str] = None
+
+class AdminStatsResponse(BaseModel):
+    total_clients: int
+    confirmed_clients: int
+    pending_clients: int
+    focus_distribution: dict
+

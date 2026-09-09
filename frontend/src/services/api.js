@@ -69,7 +69,86 @@ export const api = {
       console.warn('Backend unavailable, fallback to local data:', err);
       return null;
     }
+  },
+
+  // Admin authentication
+  async adminLogin(username, password) {
+    const res = await fetch(`${API_BASE_URL}/admin/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Authentication failed' }));
+      throw new Error(err.detail || 'Invalid username or password');
+    }
+    return await res.json();
+  },
+
+  // Get all registered clients with search & filter
+  async getAdminClients(token, { search = '', status = '', focus_area = '' } = {}) {
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (status && status !== 'all') params.append('status', status);
+    if (focus_area && focus_area !== 'all') params.append('focus_area', focus_area);
+
+    const res = await fetch(`${API_BASE_URL}/admin/clients?${params.toString()}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to fetch registered clients' }));
+      throw new Error(err.detail || `HTTP ${res.status}`);
+    }
+    return await res.json();
+  },
+
+  // Get admin metrics & statistics
+  async getAdminStats(token) {
+    const res = await fetch(`${API_BASE_URL}/admin/stats`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!res.ok) {
+      throw new Error('Failed to fetch dashboard statistics');
+    }
+    return await res.json();
+  },
+
+  // Update client status or details
+  async updateClient(token, clientId, data) {
+    const res = await fetch(`${API_BASE_URL}/admin/clients/${clientId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to update client' }));
+      throw new Error(err.detail || 'Update failed');
+    }
+    return await res.json();
+  },
+
+  // Delete client booking
+  async deleteClient(token, clientId) {
+    const res = await fetch(`${API_BASE_URL}/admin/clients/${clientId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to delete client' }));
+      throw new Error(err.detail || 'Deletion failed');
+    }
+    return await res.json();
   }
 };
+
 
 

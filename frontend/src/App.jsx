@@ -9,6 +9,7 @@ import HomePage from './pages/HomePage';
 import PillarsPage from './pages/PillarsPage';
 import AssessmentPage from './pages/AssessmentPage';
 import JournalPage from './pages/JournalPage';
+import AdminPage from './pages/AdminPage';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('home');
@@ -62,6 +63,12 @@ export default function App() {
             onSelectArticle={setActiveArticle}
           />
         );
+      case 'admin':
+        return (
+          <AdminPage 
+            onNavigate={setCurrentPage}
+          />
+        );
       default:
         return (
           <HomePage 
@@ -72,6 +79,7 @@ export default function App() {
         );
     }
   };
+
 
   return (
     <div className="site-wrapper">

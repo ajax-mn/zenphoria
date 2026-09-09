@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.db.session import engine, Base
 from app.models import db_models
-from app.api.endpoints import waiting_list, consultation, pillars, articles
+from app.api.endpoints import waiting_list, consultation, pillars, articles, admin
 
 # Lifespan context to auto-create tables in Neon Database on startup
 @asynccontextmanager
@@ -40,6 +40,8 @@ app.include_router(waiting_list.router, prefix=settings.API_V1_STR)
 app.include_router(consultation.router, prefix=settings.API_V1_STR)
 app.include_router(pillars.router, prefix=settings.API_V1_STR)
 app.include_router(articles.router, prefix=settings.API_V1_STR)
+app.include_router(admin.router, prefix=settings.API_V1_STR)
+
 
 @app.get("/", tags=["Health"])
 async def root():

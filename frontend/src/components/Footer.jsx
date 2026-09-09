@@ -21,6 +21,7 @@ export default function Footer({ onNavigate }) {
               <li><span className="footer-link" onClick={() => onNavigate('pillars')}>The Five Pillars</span></li>
               <li><span className="footer-link" onClick={() => onNavigate('assessment')}>Sessions & Consultation</span></li>
               <li><span className="footer-link" onClick={() => onNavigate('journal')}>Journal & Resources</span></li>
+              <li><span className="footer-link" onClick={() => onNavigate('admin')}>Admin Portal</span></li>
             </ul>
           </div>
 
