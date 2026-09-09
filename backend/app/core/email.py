@@ -83,13 +83,54 @@ def build_confirmation_html(name: str, focus_area: str, cadence: str, booking_id
     </html>
     """
 
+import json
+import urllib.request
+import urllib.error
+
+def send_via_resend_api(api_key: str, from_email: str, from_name: str, to_email: str, subject: str, html_content: str) -> bool:
+    """Send transactional email via Resend HTTPS API (Port 443 - 100% Render compatible)."""
+    try:
+        url = "https://api.resend.com/emails"
+        # Resend free tier accepts 'onboarding@resend.dev' or any verified domain
+        from_header = f"{from_name} <onboarding@resend.dev>" if "gmail.com" in from_email else f"{from_name} <{from_email}>"
+        
+        payload = {
+            "from": from_header,
+            "to": [to_email],
+            "subject": subject,
+            "html": html_content
+        }
+        data = json.dumps(payload).encode("utf-8")
+        req = urllib.request.Request(
+            url,
+            data=data,
+            headers={
+                "Authorization": f"Bearer {api_key.strip()}",
+                "Content-Type": "application/json",
+                "User-Agent": "Zenphoria-API"
+            },
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=15) as response:
+            res_body = response.read().decode("utf-8")
+            print(f"[EMAIL SERVICE] SUCCESS: Email delivered via Resend HTTPS API! Response: {res_body}")
+            return True
+    except urllib.error.HTTPError as e:
+        err_msg = e.read().decode("utf-8")
+        print(f"[EMAIL SERVICE] Resend API HTTP Error ({e.code}): {err_msg}")
+        return False
+    except Exception as e:
+        print(f"[EMAIL SERVICE] Resend API Error: {e}")
+        return False
+
 def send_booking_confirmation_email(to_email: str, name: str, focus_area: str, cadence: str, booking_id: str):
-    """Sends HTML email confirmation to client via SMTP with dual-port STARTTLS / SSL fallback."""
+    """Sends HTML email confirmation to client via Resend HTTPS API (Render-friendly) or SMTP."""
     load_dotenv(override=True)
     
+    resend_api_key = os.getenv("RESEND_API_KEY", "").strip()
     smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com").strip()
-    smtp_port_str = os.getenv("SMTP_PORT", "587").strip()
-    smtp_port = int(smtp_port_str) if smtp_port_str.isdigit() else 587
+    smtp_port_str = os.getenv("SMTP_PORT", "465").strip()
+    smtp_port = int(smtp_port_str) if smtp_port_str.isdigit() else 465
     smtp_user = os.getenv("SMTP_USER", "").strip()
     smtp_password = os.getenv("SMTP_PASSWORD", "").strip()
     emails_from_email = os.getenv("EMAILS_FROM_EMAIL", smtp_user or "support@zenphoria.com").strip()
@@ -98,6 +139,21 @@ def send_booking_confirmation_email(to_email: str, name: str, focus_area: str, c
     subject = f"Zenphoria Booking Confirmed [{booking_id}]"
     html_content = build_confirmation_html(name, focus_area, cadence, booking_id)
 
+    # Method 1: If RESEND_API_KEY is provided, use HTTPS REST API (Never blocked on Render)
+    if resend_api_key:
+        print(f"[EMAIL SERVICE] Sending confirmation email via Resend HTTPS API to {to_email}...")
+        resend_ok = send_via_resend_api(
+            api_key=resend_api_key,
+            from_email=emails_from_email,
+            from_name=emails_from_name,
+            to_email=to_email,
+            subject=subject,
+            html_content=html_content
+        )
+        if resend_ok:
+            return True
+
+    # Method 2: Standard SMTP fallback
     if smtp_host and smtp_user and smtp_password:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
@@ -106,14 +162,13 @@ def send_booking_confirmation_email(to_email: str, name: str, focus_area: str, c
         part = MIMEText(html_content, "html")
         msg.attach(part)
 
-        # Attempt 1: Connect via configured port
         try:
             print(f"[EMAIL SERVICE] Attempting SMTP sending to {to_email} via {smtp_host}:{smtp_port}...")
             if smtp_port == 465:
                 context = ssl.create_default_context()
-                server = smtplib.SMTP_SSL(smtp_host, 465, context=context, timeout=20)
+                server = smtplib.SMTP_SSL(smtp_host, 465, context=context, timeout=15)
             else:
-                server = smtplib.SMTP(smtp_host, smtp_port, timeout=20)
+                server = smtplib.SMTP(smtp_host, smtp_port, timeout=15)
                 server.starttls()
                 
             server.login(smtp_user, smtp_password)
@@ -122,11 +177,10 @@ def send_booking_confirmation_email(to_email: str, name: str, focus_area: str, c
             print(f"[EMAIL SERVICE] SUCCESS: Confirmation email sent to {to_email} via SMTP ({smtp_host}:{smtp_port})!")
             return True
         except Exception as e1:
-            print(f"[EMAIL SERVICE] Port {smtp_port} failed ({e1}), attempting fallback via direct SSL (port 465)...")
+            print(f"[EMAIL SERVICE] Port {smtp_port} failed ({e1}), attempting fallback via SSL (port 465)...")
             try:
-                # Attempt 2: Fallback to Port 465 SMTP_SSL (Works on cloud platforms like Render)
                 context = ssl.create_default_context()
-                server = smtplib.SMTP_SSL(smtp_host, 465, context=context, timeout=20)
+                server = smtplib.SMTP_SSL(smtp_host, 465, context=context, timeout=15)
                 server.login(smtp_user, smtp_password)
                 server.sendmail(emails_from_email, [to_email], msg.as_string())
                 server.quit()
@@ -136,11 +190,10 @@ def send_booking_confirmation_email(to_email: str, name: str, focus_area: str, c
                 print(f"[EMAIL SERVICE] ERROR: Both SMTP attempts failed. Port {smtp_port}: {e1} | Port 465: {e2}")
                 return False
 
-    else:
-        print("==================================================")
-        print("[EMAIL SERVICE] NOTE: SMTP Credentials missing in environment variables.")
-        print(f"Triggered for: {to_email} | Subject: {subject}")
-        print(f"Booking ID: {booking_id} | Client: {name} | Focus: {focus_area}")
-        print("==================================================")
-        return False
+    print("==================================================")
+    print("[EMAIL SERVICE] NOTE: No email credentials or API keys configured.")
+    print(f"Triggered for: {to_email} | Subject: {subject}")
+    print("==================================================")
+    return False
+
 
