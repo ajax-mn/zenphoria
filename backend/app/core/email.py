@@ -82,46 +82,60 @@ def build_confirmation_html(name: str, focus_area: str, cadence: str, booking_id
     """
 
 def send_booking_confirmation_email(to_email: str, name: str, focus_area: str, cadence: str, booking_id: str):
-    """Sends HTML email confirmation to client via SMTP or logs simulation when SMTP is unconfigured."""
+    """Sends HTML email confirmation to client via SMTP with dual-port STARTTLS / SSL fallback."""
     load_dotenv(override=True)
     
-    smtp_host = os.getenv("SMTP_HOST", "")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    smtp_user = os.getenv("SMTP_USER", "")
-    smtp_password = os.getenv("SMTP_PASSWORD", "")
-    emails_from_email = os.getenv("EMAILS_FROM_EMAIL", smtp_user or "support@zenphoria.com")
-    emails_from_name = os.getenv("EMAILS_FROM_NAME", "Zenphoria Clinical Wellness")
+    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com").strip()
+    smtp_port_str = os.getenv("SMTP_PORT", "587").strip()
+    smtp_port = int(smtp_port_str) if smtp_port_str.isdigit() else 587
+    smtp_user = os.getenv("SMTP_USER", "").strip()
+    smtp_password = os.getenv("SMTP_PASSWORD", "").strip()
+    emails_from_email = os.getenv("EMAILS_FROM_EMAIL", smtp_user or "support@zenphoria.com").strip()
+    emails_from_name = os.getenv("EMAILS_FROM_NAME", "Zenphoria Clinical Wellness").strip()
 
     subject = f"Zenphoria Booking Confirmed [{booking_id}]"
     html_content = build_confirmation_html(name, focus_area, cadence, booking_id)
 
     if smtp_host and smtp_user and smtp_password:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = f"{emails_from_name} <{emails_from_email}>"
+        msg["To"] = to_email
+        part = MIMEText(html_content, "html")
+        msg.attach(part)
+
+        # Attempt 1: Port 587 with STARTTLS
         try:
-            print(f"[EMAIL SERVICE] Connecting to {smtp_host}:{smtp_port} for {to_email}...")
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = subject
-            msg["From"] = f"{emails_from_name} <{emails_from_email}>"
-            msg["To"] = to_email
-
-            part = MIMEText(html_content, "html")
-            msg.attach(part)
-
-            server = smtplib.SMTP(smtp_host, smtp_port, timeout=15)
-            server.starttls()
+            print(f"[EMAIL SERVICE] Attempting SMTP sending to {to_email} via {smtp_host}:{smtp_port}...")
+            if smtp_port == 465:
+                server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=15)
+            else:
+                server = smtplib.SMTP(smtp_host, smtp_port, timeout=15)
+                server.starttls()
+                
             server.login(smtp_user, smtp_password)
             server.sendmail(emails_from_email, [to_email], msg.as_string())
             server.quit()
-
-            print(f"[EMAIL SERVICE] SUCCESS: Live confirmation email sent to {to_email} from {emails_from_email} via SMTP ({smtp_host})!")
+            print(f"[EMAIL SERVICE] SUCCESS: Confirmation email sent to {to_email} via SMTP ({smtp_host}:{smtp_port})!")
             return True
-        except Exception as e:
-            print(f"[EMAIL SERVICE] ERROR sending live email via SMTP: {e}")
-            return False
+        except Exception as e1:
+            print(f"[EMAIL SERVICE] Port {smtp_port} failed ({e1}), attempting fallback via SSL (port 465)...")
+            try:
+                # Attempt 2: Fallback to Port 465 SMTP_SSL (Render-friendly)
+                server = smtplib.SMTP_SSL(smtp_host, 465, timeout=15)
+                server.login(smtp_user, smtp_password)
+                server.sendmail(emails_from_email, [to_email], msg.as_string())
+                server.quit()
+                print(f"[EMAIL SERVICE] SUCCESS: Confirmation email sent to {to_email} via SSL Port 465!")
+                return True
+            except Exception as e2:
+                print(f"[EMAIL SERVICE] ERROR: Both SMTP attempts failed. Port {smtp_port}: {e1} | Port 465: {e2}")
+                return False
     else:
         print("==================================================")
-        print("[EMAIL SERVICE] CONFIRMATION EMAIL TRIGGERED:")
-        print(f"To: {to_email}")
-        print(f"Subject: {subject}")
-        print(f"Booking ID: {booking_id} | Client: {name} | Focus: {focus_area} | Cadence: {cadence}")
+        print("[EMAIL SERVICE] NOTE: SMTP Credentials missing in environment variables.")
+        print(f"Triggered for: {to_email} | Subject: {subject}")
+        print(f"Booking ID: {booking_id} | Client: {name} | Focus: {focus_area}")
         print("==================================================")
-        return True
+        return False
+
