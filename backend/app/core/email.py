@@ -1,9 +1,11 @@
 import os
 import smtplib
+import ssl
 import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
+
 
 logger = logging.getLogger("zenphoria.email")
 
@@ -104,13 +106,14 @@ def send_booking_confirmation_email(to_email: str, name: str, focus_area: str, c
         part = MIMEText(html_content, "html")
         msg.attach(part)
 
-        # Attempt 1: Port 587 with STARTTLS
+        # Attempt 1: Connect via configured port
         try:
             print(f"[EMAIL SERVICE] Attempting SMTP sending to {to_email} via {smtp_host}:{smtp_port}...")
             if smtp_port == 465:
-                server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=15)
+                context = ssl.create_default_context()
+                server = smtplib.SMTP_SSL(smtp_host, 465, context=context, timeout=20)
             else:
-                server = smtplib.SMTP(smtp_host, smtp_port, timeout=15)
+                server = smtplib.SMTP(smtp_host, smtp_port, timeout=20)
                 server.starttls()
                 
             server.login(smtp_user, smtp_password)
@@ -119,10 +122,11 @@ def send_booking_confirmation_email(to_email: str, name: str, focus_area: str, c
             print(f"[EMAIL SERVICE] SUCCESS: Confirmation email sent to {to_email} via SMTP ({smtp_host}:{smtp_port})!")
             return True
         except Exception as e1:
-            print(f"[EMAIL SERVICE] Port {smtp_port} failed ({e1}), attempting fallback via SSL (port 465)...")
+            print(f"[EMAIL SERVICE] Port {smtp_port} failed ({e1}), attempting fallback via direct SSL (port 465)...")
             try:
-                # Attempt 2: Fallback to Port 465 SMTP_SSL (Render-friendly)
-                server = smtplib.SMTP_SSL(smtp_host, 465, timeout=15)
+                # Attempt 2: Fallback to Port 465 SMTP_SSL (Works on cloud platforms like Render)
+                context = ssl.create_default_context()
+                server = smtplib.SMTP_SSL(smtp_host, 465, context=context, timeout=20)
                 server.login(smtp_user, smtp_password)
                 server.sendmail(emails_from_email, [to_email], msg.as_string())
                 server.quit()
@@ -131,6 +135,7 @@ def send_booking_confirmation_email(to_email: str, name: str, focus_area: str, c
             except Exception as e2:
                 print(f"[EMAIL SERVICE] ERROR: Both SMTP attempts failed. Port {smtp_port}: {e1} | Port 465: {e2}")
                 return False
+
     else:
         print("==================================================")
         print("[EMAIL SERVICE] NOTE: SMTP Credentials missing in environment variables.")

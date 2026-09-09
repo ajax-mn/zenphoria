@@ -155,3 +155,25 @@ async def delete_registered_client(
     db.delete(entry)
     db.commit()
     return {"success": True, "message": f"Client record '{client_id}' deleted successfully."}
+
+@router.post("/test-email")
+async def test_email_diagnostic(
+    to_email: str = "ajaxmillenian@gmail.com",
+    authenticated: bool = Depends(verify_admin_auth)
+):
+    """Diagnostic endpoint to test live SMTP delivery on deployed environment."""
+    from app.core.email import send_booking_confirmation_email
+    import traceback
+    try:
+        success = send_booking_confirmation_email(
+            to_email=to_email,
+            name="Diagnostic Admin",
+            focus_area="Stress & Anxiety",
+            cadence="Weekly Modular",
+            booking_id="diag_test"
+        )
+        return {"success": success, "recipient": to_email, "message": "Email delivery attempted"}
+    except Exception as e:
+        return {"success": False, "error": str(e), "traceback": traceback.format_exc()}
+
+
