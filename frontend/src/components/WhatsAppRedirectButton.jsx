@@ -12,23 +12,17 @@ import { MessageCircle } from 'lucide-react';
  */
 export default function WhatsAppRedirectButton({
   clientName = '',
-  phoneNumber = '919645866400', // International format with country code 91 (India)
+  phoneNumber = '917902757042', // International format with country code 91 (India)
   customMessage = '',
   className = ''
 }) {
   const displayName = clientName?.trim() || 'a client';
-  
-  const defaultMessage = customMessage || 
+
+  const defaultMessage = customMessage ||
     `Hi, I just registered on Zenphoria as ${displayName}. I'd like to get more details about the consultation process.`;
 
   const encodedMessage = encodeURIComponent(defaultMessage);
-  
-  // Format phone number: strip non-digits, ensure country code 91 if 10-digit number
-  let cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
-  if (cleanPhone.length === 10) {
-    cleanPhone = `91${cleanPhone}`;
-  }
-
+  const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
 
   return (

@@ -175,24 +175,27 @@ def send_via_resend(to_email: str, subject: str, html_content: str) -> bool:
 
 
 def send_booking_confirmation_email(to_email: str, name: str, focus_area: str, cadence: str, booking_id: str) -> bool:
-    """Sends HTML email confirmation using either SMTP or Resend API."""
+    """Sends HTML email confirmation using Resend API first (HTTPS/Port 443, optimal for Render/cloud deployments), falling back to SMTP if needed."""
     load_dotenv(override=True)
     
     subject = f"Zenphoria Booking Confirmed [{booking_id}]"
     html_content = build_confirmation_html(name, focus_area, cadence, booking_id)
 
-    # 1. Try Gmail/Custom SMTP first if configured (works for ANY recipient address)
+    # 1. Primary: Try Resend HTTPS API first (optimal for cloud hosts like Render where outbound SMTP ports may be restricted)
+    if os.getenv("RESEND_API_KEY"):
+        print(f"[EMAIL SERVICE] Attempting primary delivery via Resend API to {to_email}...")
+        if send_via_resend(to_email, subject, html_content):
+            return True
+        print(f"[EMAIL SERVICE] Resend delivery failed or restricted for {to_email}. Trying SMTP fallback...")
+
+    # 2. Fallback: Try Gmail/Custom SMTP if Resend is unavailable or fails
     if os.getenv("SMTP_USER") and os.getenv("SMTP_PASSWORD"):
+        print(f"[EMAIL SERVICE] Attempting fallback delivery via SMTP to {to_email}...")
         if send_via_smtp(to_email, subject, html_content):
             return True
 
-    # 2. Try Resend API
-    if os.getenv("RESEND_API_KEY"):
-        if send_via_resend(to_email, subject, html_content):
-            return True
-
     print("==================================================")
-    print(f"[EMAIL SERVICE] Failed to deliver email to {to_email}. Ensure SMTP or Resend credentials are valid.")
+    print(f"[EMAIL SERVICE] Failed to deliver email to {to_email}. Both Resend and SMTP fallback failed.")
     print(f"Booking ID: {booking_id} | Client: {name}")
     print("==================================================")
     return False

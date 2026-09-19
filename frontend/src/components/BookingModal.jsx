@@ -80,7 +80,7 @@ export default function BookingModal({ isOpen, onClose, initialData }) {
               Book Your Session
             </h2>
             <p className="page-subtitle" style={{ fontSize: '14.5px', marginBottom: '22px' }}>
-              {initialData 
+              {initialData
                 ? 'Your tailored preferences from your consultation assessment have been pre-filled below.'
                 : 'Schedule your preliminary clinical consultation with Zenphoria specialists.'}
             </p>
@@ -88,31 +88,31 @@ export default function BookingModal({ isOpen, onClose, initialData }) {
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label className="form-label">Full Name</label>
-                <input 
-                  type="text" 
-                  className="form-input" 
+                <input
+                  type="text"
+                  className="form-input"
                   placeholder="e.g. Julian Hayes"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required 
+                  required
                 />
               </div>
 
               <div className="form-group">
                 <label className="form-label">Email Address</label>
-                <input 
-                  type="email" 
-                  className="form-input" 
+                <input
+                  type="email"
+                  className="form-input"
                   placeholder="julian@example.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required 
+                  required
                 />
               </div>
 
               <div className="form-group">
                 <label className="form-label">Primary Focus Area</label>
-                <select 
+                <select
                   className="form-select"
                   value={formData.focusArea}
                   onChange={(e) => setFormData({ ...formData, focusArea: e.target.value })}
@@ -126,7 +126,7 @@ export default function BookingModal({ isOpen, onClose, initialData }) {
 
               <div className="form-group">
                 <label className="form-label">Preferred Session Cadence</label>
-                <select 
+                <select
                   className="form-select"
                   value={formData.cadence}
                   onChange={(e) => setFormData({ ...formData, cadence: e.target.value })}
@@ -139,9 +139,9 @@ export default function BookingModal({ isOpen, onClose, initialData }) {
 
               <div className="form-group">
                 <label className="form-label">Preferred Time Window / Date</label>
-                <input 
-                  type="text" 
-                  className="form-input" 
+                <input
+                  type="text"
+                  className="form-input"
                   placeholder="e.g. Next Monday Morning or Next Available"
                   value={formData.preferredDate}
                   onChange={(e) => setFormData({ ...formData, preferredDate: e.target.value })}
@@ -150,8 +150,8 @@ export default function BookingModal({ isOpen, onClose, initialData }) {
 
               <div className="form-group">
                 <label className="form-label">Additional Notes & Goals</label>
-                <textarea 
-                  className="form-textarea" 
+                <textarea
+                  className="form-textarea"
                   rows={3}
                   placeholder="Share any specific outcomes or topics you'd like to explore..."
                   value={formData.notes}
@@ -174,15 +174,15 @@ export default function BookingModal({ isOpen, onClose, initialData }) {
               Booking Confirmed!
             </h2>
             <p className="page-subtitle" style={{ fontSize: '14.5px', maxWidth: '400px', margin: '0 auto 20px' }}>
-              Thank you, <strong>{formData.name || 'there'}</strong>. Your consultation reservation for <em>{formData.focusArea}</em> ({formData.cadence}) has been stored in our clinical database. Confirmation details have been sent to <strong>{formData.email}</strong>.
+              Thank you, <strong>{formData.name || 'there'}</strong>.Confirmation details have been sent to <strong>{formData.email}</strong>.
             </p>
-            
+
             <div style={{ maxWidth: '360px', margin: '0 auto 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <WhatsAppRedirectButton clientName={formData.name} />
-              
-              <button 
+
+              <button
                 type="button"
-                className="btn btn-outline" 
+                className="btn btn-outline"
                 onClick={handleReset}
                 style={{ width: '100%', justifyContent: 'center' }}
               >
