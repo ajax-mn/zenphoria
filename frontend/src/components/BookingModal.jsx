@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, CheckCircle2, Calendar } from 'lucide-react';
 import { api } from '../services/api';
+import WhatsAppRedirectButton from './WhatsAppRedirectButton';
 
 export default function BookingModal({ isOpen, onClose, initialData }) {
   const [submitted, setSubmitted] = useState(false);
@@ -172,12 +173,22 @@ export default function BookingModal({ isOpen, onClose, initialData }) {
             <h2 className="page-title" style={{ fontSize: '26px', marginBottom: '10px' }}>
               Booking Confirmed!
             </h2>
-            <p className="page-subtitle" style={{ fontSize: '14.5px', maxWidth: '400px', margin: '0 auto 24px' }}>
+            <p className="page-subtitle" style={{ fontSize: '14.5px', maxWidth: '400px', margin: '0 auto 20px' }}>
               Thank you, <strong>{formData.name || 'there'}</strong>. Your consultation reservation for <em>{formData.focusArea}</em> ({formData.cadence}) has been stored in our clinical database. Confirmation details have been sent to <strong>{formData.email}</strong>.
             </p>
-            <button className="btn btn-primary" onClick={handleReset}>
-              Return to Zenphoria
-            </button>
+            
+            <div style={{ maxWidth: '360px', margin: '0 auto 16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <WhatsAppRedirectButton clientName={formData.name} />
+              
+              <button 
+                type="button"
+                className="btn btn-outline" 
+                onClick={handleReset}
+                style={{ width: '100%', justifyContent: 'center' }}
+              >
+                Return to Zenphoria
+              </button>
+            </div>
           </div>
         )}
       </div>

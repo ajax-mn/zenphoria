@@ -158,7 +158,9 @@ export const api = {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: 'Failed to fetch registered clients' }));
-      throw new Error(err.detail || `HTTP ${res.status}`);
+      const errorObj = new Error(err.detail || `HTTP ${res.status}`);
+      errorObj.status = res.status;
+      throw errorObj;
     }
     return await res.json();
   },
@@ -171,7 +173,10 @@ export const api = {
       }
     });
     if (!res.ok) {
-      throw new Error('Failed to fetch dashboard statistics');
+      const err = await res.json().catch(() => ({ detail: 'Failed to fetch dashboard statistics' }));
+      const errorObj = new Error(err.detail || `HTTP ${res.status}`);
+      errorObj.status = res.status;
+      throw errorObj;
     }
     return await res.json();
   },
@@ -188,7 +193,9 @@ export const api = {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: 'Failed to update client' }));
-      throw new Error(err.detail || 'Update failed');
+      const errorObj = new Error(err.detail || 'Update failed');
+      errorObj.status = res.status;
+      throw errorObj;
     }
     return await res.json();
   },
@@ -203,8 +210,11 @@ export const api = {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: 'Failed to delete client' }));
-      throw new Error(err.detail || 'Deletion failed');
+      const errorObj = new Error(err.detail || 'Deletion failed');
+      errorObj.status = res.status;
+      throw errorObj;
     }
     return await res.json();
   }
 };
+

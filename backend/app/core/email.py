@@ -82,30 +82,64 @@ def build_confirmation_html(name: str, focus_area: str, cadence: str, booking_id
     </html>
     """
 
-def send_booking_confirmation_email(to_email: str, name: str, focus_area: str, cadence: str, booking_id: str) -> bool:
-    """Sends HTML email confirmation to client via Resend HTTPS API (Port 443)."""
-    load_dotenv(override=True)
-    
+def send_via_smtp(to_email: str, subject: str, html_content: str) -> bool:
+    """Sends email via standard SMTP (e.g. Gmail SSL/TLS)."""
+    import smtplib
+    import ssl
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    smtp_host = os.getenv("SMTP_HOST", "").strip()
+    smtp_port = int(os.getenv("SMTP_PORT", "465"))
+    smtp_user = os.getenv("SMTP_USER", "").strip()
+    smtp_pass = os.getenv("SMTP_PASSWORD", "").strip()
+    from_name = os.getenv("EMAILS_FROM_NAME", "Zenphoria Clinical Wellness").strip()
+
+    if not (smtp_host and smtp_user and smtp_pass):
+        return False
+
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = f"{from_name} <{smtp_user}>"
+        msg["To"] = to_email
+        msg.attach(MIMEText(html_content, "html"))
+
+        if smtp_port == 465:
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context, timeout=15) as server:
+                server.login(smtp_user, smtp_pass)
+                server.sendmail(smtp_user, [to_email], msg.as_string())
+        else:
+            with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_pass)
+                server.sendmail(smtp_user, [to_email], msg.as_string())
+
+        print(f"[EMAIL SERVICE] SUCCESS: Email sent to {to_email} via SMTP ({smtp_host})!")
+        return True
+    except Exception as e:
+        print(f"[EMAIL SERVICE] SMTP error sending to {to_email}: {e}")
+        return False
+
+
+def send_via_resend(to_email: str, subject: str, html_content: str) -> bool:
+    """Sends email via Resend HTTPS API."""
     resend_api_key = os.getenv("RESEND_API_KEY", "").strip()
     emails_from_name = os.getenv("EMAILS_FROM_NAME", "Zenphoria Clinical Wellness").strip()
     emails_from_email = os.getenv("EMAILS_FROM_EMAIL", "onboarding@resend.dev").strip()
 
-    subject = f"Zenphoria Booking Confirmed [{booking_id}]"
-    html_content = build_confirmation_html(name, focus_area, cadence, booking_id)
-
     if not resend_api_key:
-        print("==================================================")
-        print("[EMAIL SERVICE] NOTE: 'RESEND_API_KEY' is not configured.")
-        print(f"To: {to_email} | Subject: {subject}")
-        print(f"Booking ID: {booking_id} | Client: {name}")
-        print("==================================================")
         return False
 
     try:
         url = "https://api.resend.com/emails"
         
-        # Use verified domain or Resend free sandbox sender
-        from_header = f"{emails_from_name} <{emails_from_email}>" if "@" in emails_from_email else f"{emails_from_name} <onboarding@resend.dev>"
+        # If the email is a standard gmail or unverified domain, fallback to onboarding@resend.dev
+        if "@" in emails_from_email and not emails_from_email.endswith("@gmail.com"):
+            from_header = f"{emails_from_name} <{emails_from_email}>"
+        else:
+            from_header = f"{emails_from_name} <onboarding@resend.dev>"
 
         payload = {
             "from": from_header,
@@ -136,5 +170,30 @@ def send_booking_confirmation_email(to_email: str, name: str, focus_area: str, c
         print(f"[EMAIL SERVICE] Resend API HTTP Error ({e.code}): {err_msg}")
         return False
     except Exception as e:
-        print(f"[EMAIL SERVICE] Error sending confirmation email: {e}")
+        print(f"[EMAIL SERVICE] Error sending via Resend: {e}")
         return False
+
+
+def send_booking_confirmation_email(to_email: str, name: str, focus_area: str, cadence: str, booking_id: str) -> bool:
+    """Sends HTML email confirmation using either SMTP or Resend API."""
+    load_dotenv(override=True)
+    
+    subject = f"Zenphoria Booking Confirmed [{booking_id}]"
+    html_content = build_confirmation_html(name, focus_area, cadence, booking_id)
+
+    # 1. Try Gmail/Custom SMTP first if configured (works for ANY recipient address)
+    if os.getenv("SMTP_USER") and os.getenv("SMTP_PASSWORD"):
+        if send_via_smtp(to_email, subject, html_content):
+            return True
+
+    # 2. Try Resend API
+    if os.getenv("RESEND_API_KEY"):
+        if send_via_resend(to_email, subject, html_content):
+            return True
+
+    print("==================================================")
+    print(f"[EMAIL SERVICE] Failed to deliver email to {to_email}. Ensure SMTP or Resend credentials are valid.")
+    print(f"Booking ID: {booking_id} | Client: {name}")
+    print("==================================================")
+    return False
+

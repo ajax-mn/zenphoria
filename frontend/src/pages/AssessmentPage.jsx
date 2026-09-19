@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Lightbulb, Heart, TrendingUp, Flower2, CheckCircle2, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
 import { ASSESSMENT_OPTIONS } from '../data/zenphoriaData';
 import { api } from '../services/api';
+import WhatsAppRedirectButton from '../components/WhatsAppRedirectButton';
 
 export default function AssessmentPage({ onNavigate, onOpenBooking }) {
   const [step, setStep] = useState(1);
@@ -74,7 +75,7 @@ export default function AssessmentPage({ onNavigate, onOpenBooking }) {
               Your consultation preference for <strong>{ASSESSMENT_OPTIONS.find(o => o.id === selectedFocus)?.title}</strong> has been structured.
             </p>
 
-            <div className="cta-btn-row" style={{ maxWidth: '440px', margin: '0 auto' }}>
+            <div className="cta-btn-row" style={{ maxWidth: '440px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button 
                 className="btn btn-primary" 
                 onClick={() => onOpenBooking({
@@ -84,14 +85,21 @@ export default function AssessmentPage({ onNavigate, onOpenBooking }) {
                 })}
               >
                 <Sparkles size={16} />
-                <span>Book Now</span>
+                <span>Book Full Session</span>
               </button>
-              <button className="btn btn-outline" onClick={() => { setIsCompleted(false); setStep(1); }}>
-                Modify Preferences
-              </button>
-              <button className="btn btn-outline" onClick={() => onNavigate('home')}>
-                Return to Home
-              </button>
+              
+              <WhatsAppRedirectButton 
+                customMessage={`Hi, I just completed my Zenphoria consultation assessment for ${ASSESSMENT_OPTIONS.find(o => o.id === selectedFocus)?.title || 'Wellness'}. I'd like to get more details about the consultation process.`}
+              />
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+                <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => { setIsCompleted(false); setStep(1); }}>
+                  Modify Preferences
+                </button>
+                <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => onNavigate('home')}>
+                  Return to Home
+                </button>
+              </div>
             </div>
           </div>
         </div>

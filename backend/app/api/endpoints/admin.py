@@ -61,6 +61,11 @@ async def admin_login(payload: AdminLoginRequest):
         message="Admin authentication successful."
     )
 
+@router.get("/verify")
+async def verify_admin_session(authenticated: bool = Depends(verify_admin_auth)):
+    """Lightweight endpoint to verify whether active admin session token is still valid."""
+    return {"valid": True, "status": "authenticated"}
+
 @router.get("/clients", response_model=List[BookingResponse])
 async def get_all_registered_clients(
     search: Optional[str] = None,

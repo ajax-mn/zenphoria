@@ -47,6 +47,17 @@ export default function AdminPage({ onNavigate }) {
   const [actionMessage, setActionMessage] = useState({ type: '', text: '' });
   const [copiedEmail, setCopiedEmail] = useState('');
 
+  const isAuthError = (err) => {
+    if (!err) return false;
+    if (err.status === 401 || err.status === 403) return true;
+    const msg = (err.message || '').toLowerCase();
+    return msg.includes('401') || 
+           msg.includes('expired') || 
+           msg.includes('unauthorized') || 
+           msg.includes('token') || 
+           msg.includes('session');
+  };
+
   // Fetch client data on login or refresh
   useEffect(() => {
     if (token) {
@@ -65,11 +76,14 @@ export default function AdminPage({ onNavigate }) {
       if (statsData) setStats(statsData);
     } catch (err) {
       console.error('Failed to load admin data:', err);
-      if (err.message && err.message.includes('401')) {
+      if (isAuthError(err)) {
         handleLogout();
-        setLoginError('Your session has expired. Please log in again.');
+        setLoginError('Your admin session has expired. Please log in again.');
       } else {
-        setActionMessage({ type: 'error', text: 'Error connecting to database. Please check backend connection.' });
+        setActionMessage({ 
+          type: 'error', 
+          text: err.message || 'Error connecting to database. Please check backend connection.' 
+        });
       }
     } finally {
       setLoadingClients(false);
@@ -119,7 +133,12 @@ export default function AdminPage({ onNavigate }) {
       }
       showTemporaryNotice('success', `Client status updated to "${newStatus}".`);
     } catch (err) {
-      showTemporaryNotice('error', 'Failed to update status: ' + err.message);
+      if (isAuthError(err)) {
+        handleLogout();
+        setLoginError('Your session has expired. Please log in again.');
+      } else {
+        showTemporaryNotice('error', 'Failed to update status: ' + err.message);
+      }
     }
   };
 
@@ -135,7 +154,12 @@ export default function AdminPage({ onNavigate }) {
       }
       showTemporaryNotice('success', `Client registration for "${clientName}" removed.`);
     } catch (err) {
-      showTemporaryNotice('error', 'Failed to delete client: ' + err.message);
+      if (isAuthError(err)) {
+        handleLogout();
+        setLoginError('Your session has expired. Please log in again.');
+      } else {
+        showTemporaryNotice('error', 'Failed to delete client: ' + err.message);
+      }
     }
   };
 
