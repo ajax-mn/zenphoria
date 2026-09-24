@@ -12,11 +12,43 @@ import JournalPage from './pages/JournalPage';
 import AdminPage from './pages/AdminPage';
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('home');
+  const getInitialPage = () => {
+    if (typeof window === 'undefined') return 'home';
+    const path = window.location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+    if (path === 'admin') return 'admin';
+    if (path === 'pillars') return 'pillars';
+    if (path === 'assessment' || path === 'consultation') return 'assessment';
+    if (path === 'journal') return 'journal';
+    return 'home';
+  };
+
+  const [currentPage, setCurrentPage] = useState(getInitialPage);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [bookingData, setBookingData] = useState(null);
   const [activeArticle, setActiveArticle] = useState(null);
+
+  const handleNavigate = (page) => {
+    setCurrentPage(page);
+    const targetPath = page === 'home' ? '/' : `/${page}`;
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState({ page }, '', targetPath);
+    }
+  };
+
+  // Listen to browser back / forward buttons
+  useEffect(() => {
+    const onPopState = () => {
+      const path = window.location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+      if (['home', 'pillars', 'assessment', 'journal', 'admin'].includes(path)) {
+        setCurrentPage(path);
+      } else if (path === '') {
+        setCurrentPage('home');
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
 
   // Scroll to top when page changes
   useEffect(() => {
@@ -38,7 +70,7 @@ export default function App() {
       case 'home':
         return (
           <HomePage 
-            onNavigate={setCurrentPage} 
+            onNavigate={handleNavigate} 
             onOpenBooking={handleOpenBooking}
             onSelectArticle={setActiveArticle}
           />
@@ -46,14 +78,14 @@ export default function App() {
       case 'pillars':
         return (
           <PillarsPage 
-            onNavigate={setCurrentPage} 
+            onNavigate={handleNavigate} 
             onOpenBooking={handleOpenBooking}
           />
         );
       case 'assessment':
         return (
           <AssessmentPage 
-            onNavigate={setCurrentPage} 
+            onNavigate={handleNavigate} 
             onOpenBooking={handleOpenBooking}
           />
         );
@@ -66,13 +98,13 @@ export default function App() {
       case 'admin':
         return (
           <AdminPage 
-            onNavigate={setCurrentPage}
+            onNavigate={handleNavigate}
           />
         );
       default:
         return (
           <HomePage 
-            onNavigate={setCurrentPage} 
+            onNavigate={handleNavigate} 
             onOpenBooking={handleOpenBooking}
             onSelectArticle={setActiveArticle}
           />
@@ -80,15 +112,14 @@ export default function App() {
     }
   };
 
-
   return (
     <div className="site-wrapper">
       {/* Responsive Header */}
       <Header 
         onOpenMenu={() => setIsMenuOpen(true)}
-        onGoHome={() => setCurrentPage('home')}
+        onGoHome={() => handleNavigate('home')}
         currentPage={currentPage}
-        onNavigate={setCurrentPage}
+        onNavigate={handleNavigate}
         onOpenBooking={handleOpenBooking}
       />
 
@@ -98,14 +129,14 @@ export default function App() {
       </main>
 
       {/* Responsive Footer */}
-      <Footer onNavigate={setCurrentPage} />
+      <Footer onNavigate={handleNavigate} />
 
       {/* Navigation Drawer for Mobile */}
       <NavDrawer 
         isOpen={isMenuOpen} 
         onClose={() => setIsMenuOpen(false)}
         currentPage={currentPage}
-        onNavigate={setCurrentPage}
+        onNavigate={handleNavigate}
         onOpenBooking={handleOpenBooking}
       />
 

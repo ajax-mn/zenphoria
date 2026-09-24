@@ -7,7 +7,6 @@ export default function Header({ onOpenMenu, onGoHome, currentPage, onNavigate, 
     { id: 'pillars', label: 'The Five Pillars' },
     { id: 'assessment', label: 'Consultation' },
     { id: 'journal', label: 'Journal & Resources' },
-    { id: 'admin', label: 'Admin' },
   ];
 
 

@@ -9,7 +9,6 @@ export default function NavDrawer({ isOpen, onClose, currentPage, onNavigate, on
     { id: 'pillars', label: 'The Five Pillars', icon: Layers },
     { id: 'assessment', label: 'Step Consultation', icon: UserCheck },
     { id: 'journal', label: 'Journal & Resources', icon: BookOpen },
-    { id: 'admin', label: 'Admin Portal', icon: ShieldCheck },
   ];
 
 

@@ -18,8 +18,9 @@ def build_confirmation_html(name: str, focus_area: str, cadence: str, booking_id
         body {{ font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #F9F8F3; color: #4E574E; margin: 0; padding: 20px; }}
         .email-container {{ max-width: 580px; margin: 0 auto; background: #FFFFFF; border-radius: 16px; overflow: hidden; border: 1px solid #E2DFD4; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }}
         .header {{ background-color: #202420; color: #FAF9F6; padding: 28px 24px; text-align: center; }}
-        .logo {{ font-family: Georgia, serif; font-size: 28px; font-weight: 500; letter-spacing: 0.05em; }}
-        .sub-logo {{ font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: #A4AAA4; margin-top: 4px; }}
+        .header-logo-img {{ width: 48px; height: 48px; object-fit: contain; margin-bottom: 8px; }}
+        .logo {{ font-family: Georgia, serif; font-size: 26px; font-weight: 500; letter-spacing: 0.04em; color: #FAF9F6; }}
+        .sub-logo {{ font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: #D4AF37; margin-top: 4px; }}
         .content {{ padding: 32px 28px; }}
         .greeting {{ font-family: Georgia, serif; font-size: 22px; color: #2B372B; margin-bottom: 12px; }}
         .text {{ font-size: 15px; line-height: 1.6; color: #4E574E; margin-bottom: 24px; }}
@@ -34,6 +35,7 @@ def build_confirmation_html(name: str, focus_area: str, cadence: str, booking_id
     <body>
       <div class="email-container">
         <div class="header">
+          <img src="https://raw.githubusercontent.com/ajax-mn/zenphoria/main/frontend/public/emblem-gold.png" alt="Zenphoria" class="header-logo-img" />
           <div class="logo">Zenphoria</div>
           <div class="sub-logo">Psychological Education & Clinical Wellness</div>
         </div>
