@@ -14,7 +14,9 @@ class Settings:
             "postgresql://neondb_owner:npg_96vtRMsDypBH@ep-still-mouse-ay5uy44z-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require"
         ).strip().strip('"').strip("'")
         if raw_url.startswith("postgres://"):
-            raw_url = raw_url.replace("postgres://", "postgresql://", 1)
+            raw_url = raw_url.replace("postgres://", "postgresql+psycopg2://", 1)
+        elif raw_url.startswith("postgresql://") and not raw_url.startswith("postgresql+"):
+            raw_url = raw_url.replace("postgresql://", "postgresql+psycopg2://", 1)
         return raw_url
     ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "admin")
     ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "zenphoria_admin")
