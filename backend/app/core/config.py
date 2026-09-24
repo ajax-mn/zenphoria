@@ -7,10 +7,15 @@ class Settings:
     PROJECT_NAME: str = "Zenphoria API"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api"
-    DATABASE_URL: str = os.getenv(
-        "DATABASE_URL", 
-        "postgresql://neondb_owner:npg_96vtRMsDypBH@ep-still-mouse-ay5uy44z-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-    )
+    @property
+    def DATABASE_URL(self) -> str:
+        raw_url = os.getenv(
+            "DATABASE_URL", 
+            "postgresql://neondb_owner:npg_96vtRMsDypBH@ep-still-mouse-ay5uy44z-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require"
+        ).strip().strip('"').strip("'")
+        if raw_url.startswith("postgres://"):
+            raw_url = raw_url.replace("postgres://", "postgresql://", 1)
+        return raw_url
     ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "admin")
     ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "zenphoria_admin")
     ADMIN_SECRET_KEY: str = os.getenv("ADMIN_SECRET_KEY", "zenphoria-clinical-admin-secret-token-key-2025")
