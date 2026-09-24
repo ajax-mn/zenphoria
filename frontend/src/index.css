@@ -156,6 +156,13 @@ button, input, textarea, select {
   cursor: pointer;
   display: flex;
   align-items: center;
+  gap: 10px;
+}
+
+.site-logo-img {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
 }
 
 /* Desktop Navigation */
@@ -1278,11 +1285,31 @@ button, input, textarea, select {
   max-width: 360px;
 }
 
+.footer-brand-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin-bottom: 12px;
+  width: fit-content;
+  transition: opacity var(--transition);
+}
+
+.footer-brand-header:hover {
+  opacity: 0.9;
+}
+
+.footer-logo-img {
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+}
+
 .footer-brand-title {
   font-family: var(--font-serif);
   font-size: 28px;
   color: #FAF9F6;
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .footer-brand-desc {

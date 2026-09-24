@@ -18,7 +18,18 @@ export default function NavDrawer({ isOpen, onClose, currentPage, onNavigate, on
       <div className="nav-drawer" onClick={(e) => e.stopPropagation()}>
         <div>
           <div className="nav-drawer-header">
-            <span className="site-logo">Zenphoria</span>
+            <div 
+              className="site-logo"
+              onClick={() => {
+                onNavigate('home');
+                onClose();
+              }}
+              role="button"
+              tabIndex={0}
+            >
+              <img src="/emblem-dark.png" alt="Zenphoria Logo" className="site-logo-img" />
+              <span>Zenphoria</span>
+            </div>
             <button className="site-nav-btn" onClick={onClose} aria-label="Close menu">
               <X size={22} />
             </button>

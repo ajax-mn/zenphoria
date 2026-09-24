@@ -21,6 +21,7 @@ export default function Header({ onOpenMenu, onGoHome, currentPage, onNavigate, 
           role="button"
           tabIndex={0}
         >
+          <img src="/emblem-dark.png" alt="Zenphoria Logo" className="site-logo-img" />
           <span>Zenphoria</span>
         </div>
 

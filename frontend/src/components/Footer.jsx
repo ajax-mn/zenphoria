@@ -7,7 +7,15 @@ export default function Footer({ onNavigate }) {
         <div className="footer-main-grid">
           {/* Brand Info */}
           <div className="footer-brand-col">
-            <div className="footer-brand-title">Zenphoria</div>
+            <div 
+              className="footer-brand-header" 
+              onClick={() => onNavigate('home')}
+              role="button"
+              tabIndex={0}
+            >
+              <img src="/emblem-white.png" alt="Zenphoria Logo" className="footer-logo-img" />
+              <div className="footer-brand-title">Zenphoria</div>
+            </div>
             <p className="footer-brand-desc">
               Psychological education for the modern era, bridging clinical expertise with accessible wisdom.
             </p>

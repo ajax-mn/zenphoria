@@ -11,6 +11,7 @@ backend/__pycache__/
 # Environment & Credentials
 .env
 backend/.env
+backend/.venv
 
 # System & IDE
 .DS_Store
