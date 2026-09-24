@@ -124,7 +124,7 @@ def send_via_smtp(to_email: str, subject: str, html_content: str) -> bool:
 
 
 def send_via_resend(to_email: str, subject: str, html_content: str) -> bool:
-    """Sends email via Resend HTTPS API."""
+    """Sends email via Resend HTTPS API with resilient headers and domain validation fallback."""
     resend_api_key = os.getenv("RESEND_API_KEY", "").strip()
     emails_from_name = os.getenv("EMAILS_FROM_NAME", "Zenphoria Clinical Wellness").strip()
     emails_from_email = os.getenv("EMAILS_FROM_EMAIL", "onboarding@resend.dev").strip()
@@ -132,22 +132,15 @@ def send_via_resend(to_email: str, subject: str, html_content: str) -> bool:
     if not resend_api_key:
         return False
 
-    try:
+    def _execute_resend_call(sender_addr: str) -> tuple[bool, int, str]:
         url = "https://api.resend.com/emails"
-        
-        # If the email is a standard gmail or unverified domain, fallback to onboarding@resend.dev
-        if "@" in emails_from_email and not emails_from_email.endswith("@gmail.com"):
-            from_header = f"{emails_from_name} <{emails_from_email}>"
-        else:
-            from_header = f"{emails_from_name} <onboarding@resend.dev>"
-
+        from_header = f"{emails_from_name} <{sender_addr}>" if sender_addr != "onboarding@resend.dev" else "onboarding@resend.dev"
         payload = {
             "from": from_header,
             "to": [to_email],
             "subject": subject,
             "html": html_content
         }
-
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
             url,
@@ -155,23 +148,40 @@ def send_via_resend(to_email: str, subject: str, html_content: str) -> bool:
             headers={
                 "Authorization": f"Bearer {resend_api_key}",
                 "Content-Type": "application/json",
-                "User-Agent": "Zenphoria-API"
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
             },
             method="POST"
         )
+        try:
+            with urllib.request.urlopen(req, timeout=15) as response:
+                res_body = response.read().decode("utf-8")
+                return True, 200, res_body
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode("utf-8")
+            return False, e.code, err_body
+        except Exception as e:
+            return False, 500, str(e)
 
-        with urllib.request.urlopen(req, timeout=15) as response:
-            res_body = response.read().decode("utf-8")
-            print(f"[EMAIL SERVICE] SUCCESS: Confirmation email sent to {to_email} via Resend API! {res_body}")
+    # 1. Attempt with configured domain email (e.g. consultation@thezenphoria.com)
+    primary_sender = emails_from_email if ("@" in emails_from_email and not emails_from_email.endswith("@gmail.com")) else "onboarding@resend.dev"
+    success, code, msg = _execute_resend_call(primary_sender)
+
+    if success:
+        print(f"[EMAIL SERVICE] SUCCESS: Confirmation email sent to {to_email} via Resend ({primary_sender})! {msg}")
+        return True
+
+    print(f"[EMAIL SERVICE] Resend delivery with '{primary_sender}' returned code {code}: {msg}")
+
+    # 2. If rejected because domain is unverified (code 403), retry with onboarding@resend.dev
+    if primary_sender != "onboarding@resend.dev" and code == 403:
+        print("[EMAIL SERVICE] Domain not yet verified in Resend dashboard. Retrying via onboarding@resend.dev...")
+        success_fallback, fb_code, fb_msg = _execute_resend_call("onboarding@resend.dev")
+        if success_fallback:
+            print(f"[EMAIL SERVICE] SUCCESS: Delivered via Resend fallback (onboarding@resend.dev) to {to_email}!")
             return True
+        print(f"[EMAIL SERVICE] Resend fallback also failed ({fb_code}): {fb_msg}")
 
-    except urllib.error.HTTPError as e:
-        err_msg = e.read().decode("utf-8")
-        print(f"[EMAIL SERVICE] Resend API HTTP Error ({e.code}): {err_msg}")
-        return False
-    except Exception as e:
-        print(f"[EMAIL SERVICE] Error sending via Resend: {e}")
-        return False
+    return False
 
 
 def send_booking_confirmation_email(to_email: str, name: str, focus_area: str, cadence: str, booking_id: str) -> bool:
