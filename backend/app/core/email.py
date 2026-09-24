@@ -8,132 +8,95 @@ from dotenv import load_dotenv
 logger = logging.getLogger("zenphoria.email")
 
 def build_confirmation_html(name: str, focus_area: str, cadence: str, booking_id: str) -> str:
-    """Builds a luxury, highly-standardized HTML email template compatible with all email clients."""
+    """Builds a concise, highly-standardized HTML email template designed to fit perfectly on mobile screens."""
     return f"""<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Zenphoria Consultation Confirmation</title>
+  <title>Booking Confirmed - Zenphoria</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #F6F4EE; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #3A453A;">
-  <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#F6F4EE" style="table-layout: fixed; padding: 32px 16px;">
+<body style="margin: 0; padding: 0; background-color: #F7F5F0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #2C352C;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#F7F5F0" style="table-layout: fixed; padding: 16px 8px;">
     <tr>
       <td align="center">
-        <!-- Main Card Container -->
-        <table width="100%" max-width="580" border="0" cellspacing="0" cellpadding="0" style="max-width: 580px; width: 100%; background-color: #FFFFFF; border-radius: 16px; overflow: hidden; border: 1px solid #E5E0D4; box-shadow: 0 8px 30px rgba(45, 55, 45, 0.06);">
+        <!-- Compact Card Container -->
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 460px; width: 100%; background-color: #FFFFFF; border-radius: 14px; overflow: hidden; border: 1px solid #E2DED4; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
           
-          <!-- Top Header Banner -->
+          <!-- Header -->
           <tr>
-            <td align="center" bgcolor="#1D241D" style="padding: 36px 24px 30px; background-color: #1D241D; border-bottom: 2px solid #334033;">
+            <td align="center" bgcolor="#1A221A" style="padding: 22px 16px 18px; background-color: #1A221A;">
               <table border="0" cellspacing="0" cellpadding="0" align="center">
                 <tr>
-                  <td align="center" style="padding-bottom: 12px;">
-                    <img src="https://raw.githubusercontent.com/ajax-mn/zenphoria/main/frontend/public/emblem-gold.png" alt="Zenphoria Emblem" width="46" height="46" style="display: block; border: 0; width: 46px; height: 46px; object-fit: contain;" />
+                  <td align="center" style="padding-bottom: 6px;">
+                    <img src="https://raw.githubusercontent.com/ajax-mn/zenphoria/main/frontend/public/emblem-gold.png" alt="Zenphoria" width="34" height="34" style="display: block; border: 0; width: 34px; height: 34px; object-fit: contain;" />
                   </td>
                 </tr>
                 <tr>
                   <td align="center">
-                    <span style="font-family: Georgia, 'Times New Roman', serif; font-size: 26px; font-weight: 600; color: #FAF8F5; letter-spacing: 0.12em; text-transform: uppercase; display: block; line-height: 1.2;">Zenphoria</span>
+                    <span style="font-family: Georgia, 'Times New Roman', serif; font-size: 20px; font-weight: 600; color: #FAF8F5; letter-spacing: 0.1em; text-transform: uppercase; display: block; line-height: 1.1;">Zenphoria</span>
                   </td>
                 </tr>
                 <tr>
-                  <td align="center" style="padding-top: 6px;">
-                    <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: #D4AF37; display: block;">Psychological Education &bull; Clinical Wellness</span>
+                  <td align="center" style="padding-top: 3px;">
+                    <span style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: #D4AF37; display: block;">Clinical Wellness</span>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Email Content Body -->
+          <!-- Body -->
           <tr>
-            <td style="padding: 36px 32px 28px;">
+            <td style="padding: 24px 20px 20px;">
               
-              <!-- Status Pill Badge -->
-              <table border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
-                <tr>
-                  <td bgcolor="#EAF2EA" style="background-color: #EAF2EA; border: 1px solid #C8DEC8; border-radius: 20px; padding: 6px 14px;">
-                    <span style="font-size: 11.5px; font-weight: 700; color: #2D5A2D; letter-spacing: 0.08em; text-transform: uppercase;">&#10003; Session Confirmed</span>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Salutation and Greeting -->
-              <h1 style="font-family: Georgia, 'Times New Roman', serif; font-size: 24px; font-weight: 500; color: #1E271E; margin: 0 0 16px; line-height: 1.25;">
-                Dear {name},
-              </h1>
+              <!-- Greeting -->
+              <h2 style="font-family: Georgia, 'Times New Roman', serif; font-size: 19px; font-weight: 600; color: #1B241B; margin: 0 0 8px; line-height: 1.3;">
+                Consultation Confirmed
+              </h2>
               
-              <p style="font-size: 15px; line-height: 1.65; color: #4A554A; margin: 0 0 28px;">
-                Thank you for scheduling your preliminary clinical consultation with Zenphoria. Your session details have been recorded in our secure practitioner registry.
+              <p style="font-size: 14px; line-height: 1.5; color: #4A564A; margin: 0 0 16px;">
+                Dear <strong>{name}</strong>, your clinical consultation has been reserved in our system.
               </p>
 
-              <!-- Reservation Summary Card (Table Based for 100% Email Compatibility) -->
-              <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#FAF8F3" style="background-color: #FAF8F3; border: 1px solid #E6E1D3; border-radius: 12px; margin-bottom: 28px; overflow: hidden;">
+              <!-- Compact Details Table -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#F9F8F4" style="background-color: #F9F8F4; border: 1px solid #E6E2D8; border-radius: 10px; margin-bottom: 16px;">
                 <tr>
-                  <td style="padding: 16px 20px 10px; border-bottom: 1px solid #ECE7DA;">
-                    <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #788578;">Reservation Details</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 14px 20px;">
+                  <td style="padding: 12px 14px;">
                     <table width="100%" border="0" cellspacing="0" cellpadding="0">
                       
-                      <!-- Booking Reference -->
+                      <!-- Booking ID -->
                       <tr>
-                        <td width="42%" style="padding: 8px 0; font-size: 13.5px; font-weight: 600; color: #2B362B; vertical-align: middle;">
-                          Booking Reference
-                        </td>
-                        <td width="58%" align="right" style="padding: 8px 0; vertical-align: middle;">
-                          <span style="background-color: #EDE8DC; color: #3E4B3E; padding: 4px 10px; border-radius: 6px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size: 12.5px; font-weight: 600; border: 1px solid #DCD5C5;">
+                        <td style="padding: 4px 0; font-size: 12.5px; color: #697569;">Reference:</td>
+                        <td align="right" style="padding: 4px 0;">
+                          <span style="font-family: 'SFMono-Regular', Consolas, Menlo, monospace; font-size: 12px; font-weight: 600; color: #2B362B; background-color: #EDE8DC; padding: 2px 7px; border-radius: 4px;">
                             {booking_id}
                           </span>
                         </td>
                       </tr>
 
-                      <!-- Divider -->
-                      <tr>
-                        <td colspan="2" style="border-top: 1px solid #EFEAE0; height: 1px; font-size: 0; line-height: 0;">&nbsp;</td>
-                      </tr>
-
                       <!-- Focus Area -->
                       <tr>
-                        <td width="42%" style="padding: 8px 0; font-size: 13.5px; font-weight: 600; color: #2B362B; vertical-align: middle;">
-                          Focus Area
-                        </td>
-                        <td width="58%" align="right" style="padding: 8px 0; font-size: 13.5px; color: #435043; font-weight: 500; vertical-align: middle;">
+                        <td style="padding: 4px 0; font-size: 12.5px; color: #697569;">Focus:</td>
+                        <td align="right" style="padding: 4px 0; font-size: 12.5px; font-weight: 600; color: #2B362B;">
                           {focus_area}
                         </td>
                       </tr>
 
-                      <!-- Divider -->
-                      <tr>
-                        <td colspan="2" style="border-top: 1px solid #EFEAE0; height: 1px; font-size: 0; line-height: 0;">&nbsp;</td>
-                      </tr>
-
                       <!-- Cadence -->
                       <tr>
-                        <td width="42%" style="padding: 8px 0; font-size: 13.5px; font-weight: 600; color: #2B362B; vertical-align: middle;">
-                          Session Cadence
-                        </td>
-                        <td width="58%" align="right" style="padding: 8px 0; font-size: 13.5px; color: #435043; font-weight: 500; vertical-align: middle;">
+                        <td style="padding: 4px 0; font-size: 12.5px; color: #697569;">Cadence:</td>
+                        <td align="right" style="padding: 4px 0; font-size: 12.5px; font-weight: 600; color: #2B362B;">
                           {cadence}
                         </td>
                       </tr>
 
-                      <!-- Divider -->
-                      <tr>
-                        <td colspan="2" style="border-top: 1px solid #EFEAE0; height: 1px; font-size: 0; line-height: 0;">&nbsp;</td>
-                      </tr>
-
                       <!-- Status -->
                       <tr>
-                        <td width="42%" style="padding: 8px 0; font-size: 13.5px; font-weight: 600; color: #2B362B; vertical-align: middle;">
-                          Booking Status
-                        </td>
-                        <td width="58%" align="right" style="padding: 8px 0; vertical-align: middle;">
-                          <span style="background-color: #D9E8D9; color: #245224; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; display: inline-block;">
-                            Confirmed
+                        <td style="padding: 4px 0; font-size: 12.5px; color: #697569;">Status:</td>
+                        <td align="right" style="padding: 4px 0;">
+                          <span style="background-color: #DCEADC; color: #215421; padding: 2px 8px; border-radius: 10px; font-size: 11.5px; font-weight: 700;">
+                            &#10003; Confirmed
                           </span>
                         </td>
                       </tr>
@@ -143,59 +106,35 @@ def build_confirmation_html(name: str, focus_area: str, cadence: str, booking_id
                 </tr>
               </table>
 
-              <!-- Next Steps Timeline Box -->
-              <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#FBF9F5" style="background-color: #FBF9F5; border: 1px solid #EDE8DE; border-radius: 12px; margin-bottom: 28px; padding: 18px 20px;">
-                <tr>
-                  <td style="padding-bottom: 12px;">
-                    <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #7B887B;">What Happens Next</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="font-size: 13.5px; line-height: 1.6; color: #485448;">
-                    <div style="margin-bottom: 8px;">&bull; <strong>Practitioner Review:</strong> A clinical specialist will review your intake notes to tailor the session framework.</div>
-                    <div style="margin-bottom: 8px;">&bull; <strong>Calendar Invitation:</strong> You will receive a direct calendar invitation with the private consultation link.</div>
-                    <div>&bull; <strong>Confidentiality:</strong> All interactions adhere to clinical data protection standards.</div>
-                  </td>
-                </tr>
-              </table>
+              <!-- Next Step Notice -->
+              <p style="font-size: 13px; line-height: 1.5; color: #556255; margin: 0 0 18px;">
+                A practitioner will review your pre-session notes and email your private calendar invite.
+              </p>
 
-              <!-- Visit Website CTA Button -->
-              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 30px;">
+              <!-- CTA Button -->
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 18px;">
                 <tr>
                   <td align="center">
-                    <table border="0" cellspacing="0" cellpadding="0">
-                      <tr>
-                        <td align="center" bgcolor="#324032" style="background-color: #324032; border-radius: 8px;">
-                          <a href="https://www.thezenphoria.com" target="_blank" style="font-size: 14px; font-weight: 600; color: #FFFFFF; text-decoration: none; padding: 13px 26px; display: inline-block; letter-spacing: 0.03em;">
-                            Visit Zenphoria Portal &rarr;
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
+                    <a href="https://www.thezenphoria.com" target="_blank" style="background-color: #2F3D2F; color: #FFFFFF; font-size: 13px; font-weight: 600; text-decoration: none; padding: 10px 22px; border-radius: 6px; display: inline-block;">
+                      Open Portal &rarr;
+                    </a>
                   </td>
                 </tr>
               </table>
 
               <!-- Sign-off -->
-              <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                <tr>
-                  <td style="font-size: 14px; line-height: 1.6; color: #546054;">
-                    Warm regards,<br/>
-                    <strong style="color: #212C21;">The Zenphoria Clinical Team</strong><br/>
-                    <span style="font-size: 12px; color: #8A968A;">zenphoria.clinical@thezenphoria.com</span>
-                  </td>
-                </tr>
-              </table>
+              <p style="font-size: 12.5px; color: #6E7B6E; margin: 0; line-height: 1.4;">
+                Warm regards,<br/>
+                <strong style="color: #263326;">The Zenphoria Clinical Team</strong>
+              </p>
 
             </td>
           </tr>
 
-          <!-- Footer Area -->
+          <!-- Footer -->
           <tr>
-            <td align="center" bgcolor="#F4F1EA" style="background-color: #F4F1EA; padding: 24px 20px; border-top: 1px solid #E5E0D5; font-size: 11.5px; line-height: 1.6; color: #7B877B;">
-              <div style="margin-bottom: 4px;">&copy; 2026 Zenphoria. All rights reserved.</div>
-              <div>Psychological education & clinical wellness for the modern era.</div>
-              <div style="margin-top: 6px; font-size: 10.5px; color: #9AA49A;">This message was generated automatically for your registered consultation request.</div>
+            <td align="center" bgcolor="#F2EFE8" style="background-color: #F2EFE8; padding: 14px 16px; border-top: 1px solid #E4DFD5; font-size: 11px; color: #828F82;">
+              &copy; 2026 Zenphoria &bull; <a href="https://www.thezenphoria.com" style="color: #586B58; text-decoration: none;">thezenphoria.com</a>
             </td>
           </tr>
 
