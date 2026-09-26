@@ -53,6 +53,15 @@ async function fetchWithFallback(endpointPath, options = {}) {
 }
 
 export const api = {
+  // Eager backend warmup ping on initial page load to eliminate cold start latency
+  async warmup() {
+    try {
+      fetchWithFallback('/health', { method: 'GET' }).catch(() => {});
+    } catch {
+      // Non-blocking silent background ping
+    }
+  },
+
   // Book session submission
   async joinWaitingList(data) {
     try {

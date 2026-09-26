@@ -24,7 +24,7 @@ export default function HomePage({ onNavigate, onOpenBooking, onSelectArticle })
                 <span>Book Now</span>
               </button>
               <button className="btn btn-outline" onClick={() => onNavigate('pillars')}>
-                Explore Method
+                Our Approach
               </button>
             </div>
           </div>

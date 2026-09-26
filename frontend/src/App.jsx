@@ -10,6 +10,7 @@ import PillarsPage from './pages/PillarsPage';
 import AssessmentPage from './pages/AssessmentPage';
 import JournalPage from './pages/JournalPage';
 import AdminPage from './pages/AdminPage';
+import { api } from './services/api';
 
 export default function App() {
   const getInitialPage = () => {
@@ -54,6 +55,11 @@ export default function App() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentPage]);
+
+  // Silently warm up the backend server on initial site visit
+  useEffect(() => {
+    api.warmup();
+  }, []);
 
   const handleOpenBooking = (initialData = null) => {
     setBookingData(initialData);
