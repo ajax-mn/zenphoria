@@ -85,7 +85,7 @@ export const ARTICLES_DATA = [
     topic: "Clinical Frameworks",
     readTime: "7 min read",
     author: "Dr. Alistair Vance",
-    image: "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1200&q=80",
+    image: "https://images.unsplash.com/photo-1516585427167-9f4af9627e6c?auto=format&fit=crop&w=1200&q=80",
     excerpt: "Examining how cognitive overload suppresses affective response, and practical behavioral interventions to maintain relational warmth under immense performance pressure.",
     content: `When high-performing leaders operate within environments characterized by unrelenting ambiguity and high cognitive stakes, affective empathy is often the first psychological resource to degrade.
 
@@ -108,7 +108,7 @@ To cultivate sustainable empathy in leadership:
     topic: "Clinical Frameworks",
     readTime: "5 min read",
     author: "Dr. Clara Lin",
-    image: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=800&q=80",
+    image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=800&q=80",
     excerpt: "Practical protocols for restoring autonomic balance after prolonged periods of hyper-arousal and chronic professional exhaustion.",
     content: `Burnout is fundamentally a physiological state of nervous system exhaustion resulting from extended allostatic load. When recovery periods are omitted, the parasympathetic ventral vagal complex fails to engage spontaneously.
 
@@ -124,7 +124,7 @@ To cultivate sustainable empathy in leadership:
     topic: "Cognitive Load",
     readTime: "8 min read",
     author: "Marcus Thorne, PhD",
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80",
+    image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80",
     excerpt: "How physical distance alters interpersonal dynamics and strategies for maintaining trust, vulnerability, and intellectual candor across asynchronous teams.",
     content: `In distributed environments, the absence of micro-expressions and organic watercooler interactions creates an interpretative vacuum. Humans naturally fill ambiguity with threat hypotheses.
 
@@ -137,7 +137,7 @@ Establishing psychological safety remotely requires intentional structural desig
     topic: "Mindfulness",
     readTime: "4 min read",
     author: "Dr. E. Frazier",
-    image: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80",
+    image: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80",
     excerpt: "Examining when self-reflection becomes rumination, and how to structure healthy contemplative inquiry without cognitive spiral.",
     content: `Self-reflection is hailed as the cornerstone of personal growth. Yet, without clinical containment, introspective inquiry frequently degenerates into unproductive rumination.
 
@@ -150,7 +150,7 @@ True reflection asks 'What' and 'How'—orienting toward adaptive action—rathe
     topic: "Clinical Frameworks",
     readTime: "8 min read",
     author: "Dr. E. Frazier",
-    image: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80",
+    image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?auto=format&fit=crop&w=800&q=80",
     excerpt: "Examining the foundational triggers of modern anxiety through a clinical lens, moving beyond symptom management to radical repair.",
     content: `Rather than treating anxiety as an unexpected intruder to be suppressed, modern clinical frameworks view anxiety as an internal dashboard indicator signaling structural misalignment in values, workload, or relational safety.`
   }

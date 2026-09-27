@@ -31,8 +31,8 @@ export default function HomePage({ onNavigate, onOpenBooking, onSelectArticle })
 
           <div className="hero-image-wrapper">
             <img 
-              src="https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=1200&q=80" 
-              alt="Warm calming consultation space" 
+              src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?auto=format&fit=crop&w=1200&q=80" 
+              alt="Psychological consultation and empathetic clinical therapy session" 
               className="hero-image"
             />
           </div>
@@ -88,8 +88,8 @@ export default function HomePage({ onNavigate, onOpenBooking, onSelectArticle })
           >
             <div className="home-read-img-wrap">
               <img 
-                src="https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80" 
-                alt="Hands holding journal" 
+                src={featuredArticle.image} 
+                alt={featuredArticle.title} 
                 className="home-read-img"
               />
               <span className="featured-badge home-featured-badge">
