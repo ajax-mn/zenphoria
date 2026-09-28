@@ -1689,6 +1689,23 @@ button, input, textarea, select {
   background: #FCE8E6;
 }
 
+.admin-danger-btn {
+  background: #FFF0ED;
+  color: #B83220;
+  border: 1px solid #FAD1C9;
+}
+
+.admin-danger-btn:hover:not(:disabled) {
+  background: #FFE4DE;
+  border-color: #F8B4A6;
+  color: #9E2616;
+}
+
+.admin-danger-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Metric Cards */
 .admin-metrics-grid {
   display: grid;

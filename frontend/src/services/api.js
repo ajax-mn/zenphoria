@@ -80,6 +80,26 @@ export const api = {
     }
   },
 
+  // Schedule consultation with Google Calendar + Meet link generation
+  async scheduleConsultation(data) {
+    try {
+      const res = await fetchWithFallback('/schedule-consultation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+        console.warn('Schedule consultation error:', errBody);
+        return { success: false, error: errBody.detail || `HTTP ${res.status}` };
+      }
+      return await res.json();
+    } catch (err) {
+      console.warn('Schedule consultation unavailable:', err);
+      return { success: false, error: err.message };
+    }
+  },
+
   // Consultation assessment submission
   async submitConsultation(data) {
     try {
@@ -209,7 +229,7 @@ export const api = {
     return await res.json();
   },
 
-  // Delete client booking
+  // Delete single client booking
   async deleteClient(token, clientId) {
     const res = await fetchWithFallback(`/admin/clients/${clientId}`, {
       method: 'DELETE',
@@ -220,6 +240,23 @@ export const api = {
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: 'Failed to delete client' }));
       const errorObj = new Error(err.detail || 'Deletion failed');
+      errorObj.status = res.status;
+      throw errorObj;
+    }
+    return await res.json();
+  },
+
+  // Delete all client bookings from database
+  async deleteAllClients(token) {
+    const res = await fetchWithFallback('/admin/clients/all', {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to delete all client records' }));
+      const errorObj = new Error(err.detail || 'Bulk deletion failed');
       errorObj.status = res.status;
       throw errorObj;
     }

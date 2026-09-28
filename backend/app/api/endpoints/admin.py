@@ -143,6 +143,21 @@ async def update_registered_client(
     db.refresh(entry)
     return entry
 
+@router.delete("/clients", status_code=status.HTTP_200_OK)
+@router.delete("/clients/all", status_code=status.HTTP_200_OK)
+async def delete_all_registered_clients(
+    authenticated: bool = Depends(verify_admin_auth),
+    db: Session = Depends(get_db)
+):
+    """Purge all client registrations from the database."""
+    count = db.query(BookingDB).delete()
+    db.commit()
+    return {
+        "success": True, 
+        "message": f"Successfully deleted all {count} client record(s).",
+        "deleted_count": count
+    }
+
 @router.delete("/clients/{client_id}", status_code=status.HTTP_200_OK)
 async def delete_registered_client(
     client_id: str,

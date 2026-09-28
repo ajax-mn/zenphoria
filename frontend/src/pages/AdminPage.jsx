@@ -46,6 +46,8 @@ export default function AdminPage({ onNavigate }) {
   const [selectedClient, setSelectedClient] = useState(null);
   const [actionMessage, setActionMessage] = useState({ type: '', text: '' });
   const [copiedEmail, setCopiedEmail] = useState('');
+  const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
 
   const isAuthError = (err) => {
     if (!err) return false;
@@ -160,6 +162,35 @@ export default function AdminPage({ onNavigate }) {
       } else {
         showTemporaryNotice('error', 'Failed to delete client: ' + err.message);
       }
+    }
+  };
+
+  const handleDeleteAllData = async () => {
+    if (deletingAll) return;
+    setDeletingAll(true);
+    try {
+      const res = await api.deleteAllClients(token);
+      setClients([]);
+      setStats({
+        total_clients: 0,
+        confirmed_clients: 0,
+        pending_clients: 0,
+        focus_distribution: {}
+      });
+      if (selectedClient) {
+        setSelectedClient(null);
+      }
+      setIsDeleteAllModalOpen(false);
+      showTemporaryNotice('success', res.message || 'All client records have been permanently cleared.');
+    } catch (err) {
+      if (isAuthError(err)) {
+        handleLogout();
+        setLoginError('Your session has expired. Please log in again.');
+      } else {
+        showTemporaryNotice('error', 'Failed to delete all data: ' + err.message);
+      }
+    } finally {
+      setDeletingAll(false);
     }
   };
 
@@ -358,6 +389,16 @@ export default function AdminPage({ onNavigate }) {
           >
             <Download size={15} />
             <span>Export CSV</span>
+          </button>
+
+          <button 
+            className="btn btn-outline admin-btn-sm admin-danger-btn" 
+            onClick={() => setIsDeleteAllModalOpen(true)}
+            title="Purge all registered client records from database"
+            disabled={!clients.length || loadingClients}
+          >
+            <Trash2 size={15} />
+            <span>Delete All Data</span>
           </button>
 
           <button 
@@ -619,6 +660,85 @@ export default function AdminPage({ onNavigate }) {
           </div>
         )}
       </div>
+
+      {/* Delete All Data Confirmation Modal */}
+      {isDeleteAllModalOpen && (
+        <div className="modal-overlay" onClick={() => !deletingAll && setIsDeleteAllModalOpen(false)}>
+          <div className="modal-container admin-detail-modal" style={{ maxWidth: '460px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header" style={{ borderBottom: 'none', paddingBottom: '0' }}>
+              <div className="admin-badge" style={{ background: '#FDF2F0', color: '#C0392B', borderColor: '#F5C6CB' }}>
+                <AlertCircle size={14} />
+                <span>Permanent Action</span>
+              </div>
+              {!deletingAll && (
+                <button 
+                  className="modal-close-btn" 
+                  onClick={() => setIsDeleteAllModalOpen(false)}
+                  aria-label="Close modal"
+                >
+                  <X size={20} />
+                </button>
+              )}
+            </div>
+
+            <div className="modal-body admin-detail-body" style={{ textAlign: 'center', paddingTop: '8px' }}>
+              <div style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '50%',
+                background: '#FDF2F0',
+                color: '#C0392B',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+                border: '1px solid #F5C6CB'
+              }}>
+                <Trash2 size={26} />
+              </div>
+
+              <h2 style={{ fontSize: '22px', fontWeight: 600, color: 'var(--text-headline)', marginBottom: '8px' }}>
+                Delete All Client Records?
+              </h2>
+              
+              <p style={{ fontSize: '14px', color: 'var(--text-body)', lineHeight: '1.5', marginBottom: '22px' }}>
+                This will permanently purge all <strong>{clients.length}</strong> registered client booking(s) from the Neon PostgreSQL database. This action cannot be reversed.
+              </p>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                <button 
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => setIsDeleteAllModalOpen(false)}
+                  disabled={deletingAll}
+                  style={{ flex: 1, justifyContent: 'center' }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="button"
+                  className="btn admin-danger-btn"
+                  onClick={handleDeleteAllData}
+                  disabled={deletingAll}
+                  style={{ flex: 1, justifyContent: 'center', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  {deletingAll ? (
+                    <>
+                      <RefreshCw size={15} className="spin-icon" />
+                      <span>Deleting All...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 size={15} />
+                      <span>Confirm & Delete All</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Client Detail Modal */}
       {selectedClient && (

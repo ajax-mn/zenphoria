@@ -21,6 +21,14 @@ class Settings:
     ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "admin")
     ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "zenphoria_admin")
     ADMIN_SECRET_KEY: str = os.getenv("ADMIN_SECRET_KEY", "zenphoria-clinical-admin-secret-token-key-2025")
+    
+    # Google Calendar & Service Account Configuration
+    GOOGLE_SERVICE_ACCOUNT_FILE: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE", "")
+    GOOGLE_SERVICE_ACCOUNT_JSON: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")
+    ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "ajaxmillenian@gmail.com")
+    ADMIN_CALENDAR_ID: str = os.getenv("ADMIN_CALENDAR_ID", "primary")
+    CALENDAR_TIMEZONE: str = os.getenv("CALENDAR_TIMEZONE", "Asia/Kolkata")
+
     CORS_ORIGINS: list[str] = [
         "http://localhost:5173",
         "http://localhost:3000",

@@ -63,3 +63,23 @@ class AdminStatsResponse(BaseModel):
     pending_clients: int
     focus_distribution: dict
 
+
+class ScheduleConsultationRequest(BaseModel):
+    client_name: str = Field(..., min_length=2, description="Client full name", example="Julian Hayes")
+    client_email: EmailStr = Field(..., description="Client email address", example="julian@example.com")
+    preferred_datetime: str = Field(..., description="Preferred date & time in ISO 8601 format", example="2026-10-05T10:00:00")
+    duration_minutes: Optional[int] = Field(default=50, ge=15, le=240, description="Session duration in minutes")
+    focus_area: Optional[str] = Field(default="Stress & Anxiety", description="Focus area")
+    notes: Optional[str] = Field(default="", description="Additional notes")
+
+
+class ScheduleConsultationResponse(BaseModel):
+    success: bool = True
+    meet_link: str = Field(..., description="Google Meet video conference link")
+    event_id: Optional[str] = None
+    event_link: Optional[str] = None
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    attendees: Optional[List[str]] = None
+    message: str = "Consultation successfully scheduled with Google Meet video link."
+

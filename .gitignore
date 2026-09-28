@@ -12,6 +12,10 @@ backend/__pycache__/
 .env
 backend/.env
 backend/.venv
+credentials/
+backend/credentials/
+*.json.secret
+service_account.json
 
 # System & IDE
 .DS_Store
