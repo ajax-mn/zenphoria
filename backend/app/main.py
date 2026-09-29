@@ -81,3 +81,24 @@ async def root():
 @app.get("/api/health", tags=["Health"])
 async def health_check():
     return {"status": "ok", "database": "connected"}
+
+
+@app.get("/api/cron/reminders", tags=["Automation"])
+@app.post("/api/cron/reminders", tags=["Automation"])
+async def cron_reminder_sweep():
+    """
+    Public automation ping endpoint.
+    Can be pinged by free cron-job / uptime monitors (e.g. cron-job.org / UptimeRobot every 5-10m)
+    to keep cloud instances awake and immediately execute pending 15-minute consultation reminders.
+    """
+    from app.services.reminder_service import check_and_dispatch_reminders, get_current_ist_time, _SCHEDULER_RUNNING
+    dispatched = check_and_dispatch_reminders()
+    now = get_current_ist_time()
+    return {
+        "status": "success",
+        "dispatched_count": dispatched,
+        "server_time_ist": now.strftime("%Y-%m-%d %H:%M:%S IST"),
+        "scheduler_running": _SCHEDULER_RUNNING,
+        "message": f"Reminder sweep complete. {dispatched} reminder(s) dispatched."
+    }
+

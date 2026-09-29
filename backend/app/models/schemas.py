@@ -17,7 +17,21 @@ class BookingResponse(BaseModel):
     cadence: Optional[str] = "Bi-Weekly Modular Cadence"
     notes: Optional[str] = ""
     status: str = "confirmed"
+    scheduled_at: Optional[datetime] = None
+    meet_link: Optional[str] = None
+    reminder_sent: Optional[bool] = False
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ReminderTriggerResponse(BaseModel):
+    success: bool
+    dispatched_count: int
+    message: str
+    server_time_ist: str
+    active_worker: bool
+
 
 class PillarTag(BaseModel):
     title: str

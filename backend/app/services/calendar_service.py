@@ -145,41 +145,59 @@ def get_calendar_service() -> Resource:
 
 def _parse_datetime(dt_input: Union[str, datetime]) -> datetime:
     """
-    Parse an input string or datetime into a valid datetime object.
-    Supports ISO 8601 strings and standard formats.
+    Parse an input string or datetime into a valid datetime object in the local application timezone (Asia/Kolkata).
+    Supports ISO 8601 strings, offset-aware strings, and standard formats.
     """
+    parsed: datetime
     if isinstance(dt_input, datetime):
-        return dt_input
+        parsed = dt_input
+    else:
+        if not isinstance(dt_input, str) or not dt_input.strip():
+            raise ValueError("preferred_datetime cannot be empty.")
 
-    if not isinstance(dt_input, str) or not dt_input.strip():
-        raise ValueError("preferred_datetime cannot be empty.")
+        dt_str = dt_input.strip()
 
-    dt_str = dt_input.strip()
+        # Normalize ISO trailing 'Z' if present
+        if dt_str.endswith("Z"):
+            dt_str = dt_str[:-1] + "+00:00"
 
-    # Normalize ISO trailing 'Z' if present
-    if dt_str.endswith("Z"):
-        dt_str = dt_str[:-1] + "+00:00"
+        try:
+            parsed = datetime.fromisoformat(dt_str)
+        except ValueError:
+            # Fallback common formats
+            common_formats = [
+                "%Y-%m-%dT%H:%M:%S",
+                "%Y-%m-%dT%H:%M",
+                "%Y-%m-%d %H:%M:%S",
+                "%Y-%m-%d %H:%M",
+                "%Y-%m-%d",
+            ]
+            parsed = None
+            for fmt in common_formats:
+                try:
+                    parsed = datetime.strptime(dt_str, fmt)
+                    break
+                except ValueError:
+                    continue
 
-    try:
-        return datetime.fromisoformat(dt_str)
-    except ValueError:
-        # Fallback common formats
-        common_formats = [
-            "%Y-%m-%dT%H:%M:%S",
-            "%Y-%m-%dT%H:%M",
-            "%Y-%m-%d %H:%M:%S",
-            "%Y-%m-%d %H:%M",
-            "%Y-%m-%d",
-        ]
-        for fmt in common_formats:
-            try:
-                return datetime.strptime(dt_str, fmt)
-            except ValueError:
-                continue
+            if parsed is None:
+                raise ValueError(
+                    f"Invalid preferred_datetime format '{dt_input}'. Please use ISO 8601 format (e.g., '2026-10-05T10:00:00')."
+                )
 
-        raise ValueError(
-            f"Invalid preferred_datetime format '{dt_input}'. Please use ISO 8601 format (e.g., '2026-10-05T10:00:00')."
-        )
+    # If datetime has timezone info, convert to Asia/Kolkata local time and make naive
+    if parsed.tzinfo is not None:
+        try:
+            import zoneinfo
+            kolkata_tz = zoneinfo.ZoneInfo("Asia/Kolkata")
+            parsed = parsed.astimezone(kolkata_tz).replace(tzinfo=None)
+        except Exception:
+            # Fallback UTC+5:30 conversion
+            import datetime as dt_mod
+            utc_dt = parsed.astimezone(dt_mod.timezone.utc)
+            parsed = (utc_dt + timedelta(hours=5, minutes=30)).replace(tzinfo=None)
+
+    return parsed
 
 
 def create_consultation_event(
@@ -261,6 +279,8 @@ def create_consultation_event(
             "useDefault": False,
             "overrides": [
                 {"method": "email", "minutes": 24 * 60},
+                {"method": "email", "minutes": 15},
+                {"method": "popup", "minutes": 15},
                 {"method": "popup", "minutes": 30}
             ]
         }
@@ -275,11 +295,12 @@ def create_consultation_event(
             calendarId=cal_id,
             body=event_body,
             conferenceDataVersion=1,
-            sendUpdates="none"
+            sendUpdates="all"
         ).execute()
     except HttpError as http_err:
         err_msg = str(http_err)
         logger.warning("Native Meet conference / attendee creation returned error: %s. Trying resilient fallback.", err_msg)
+
         
         # Attempt 2: Fallback without conferenceData (e.g. For standard Gmail accounts without domain delegation)
         fallback_body = dict(event_body)

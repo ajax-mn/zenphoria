@@ -21,7 +21,10 @@ import {
   AlertCircle,
   Copy,
   Check,
-  ChevronDown
+  ChevronDown,
+  Bell,
+  Send,
+  Video
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -48,6 +51,8 @@ export default function AdminPage({ onNavigate }) {
   const [copiedEmail, setCopiedEmail] = useState('');
   const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
   const [deletingAll, setDeletingAll] = useState(false);
+  const [triggeringReminders, setTriggeringReminders] = useState(false);
+  const [sendingReminderId, setSendingReminderId] = useState('');
 
   const isAuthError = (err) => {
     if (!err) return false;
@@ -191,6 +196,50 @@ export default function AdminPage({ onNavigate }) {
       }
     } finally {
       setDeletingAll(false);
+    }
+  };
+
+  const handleTriggerReminders = async () => {
+    setTriggeringReminders(true);
+    try {
+      const res = await api.triggerReminders(token);
+      showTemporaryNotice(
+        'success', 
+        res.message || `Reminder sweep processed. ${res.dispatched_count} reminder(s) dispatched.`
+      );
+      loadDashboardData();
+    } catch (err) {
+      console.error('Reminder trigger error:', err);
+      if (isAuthError(err)) {
+        handleLogout();
+        setLoginError('Your session has expired. Please log in again.');
+      } else {
+        showTemporaryNotice('error', err.message || 'Failed to execute reminder sweep.');
+      }
+    } finally {
+      setTriggeringReminders(false);
+    }
+  };
+
+  const handleSendClientReminder = async (clientId, clientName) => {
+    setSendingReminderId(clientId);
+    try {
+      const res = await api.sendClientReminder(token, clientId, true);
+      showTemporaryNotice(
+        'success', 
+        res.message || `15-minute reminder sent to ${clientName || 'client'}.`
+      );
+      loadDashboardData();
+    } catch (err) {
+      console.error('Failed to send client reminder:', err);
+      if (isAuthError(err)) {
+        handleLogout();
+        setLoginError('Your session has expired. Please log in again.');
+      } else {
+        showTemporaryNotice('error', err.message || `Failed to send reminder to ${clientName}.`);
+      }
+    } finally {
+      setSendingReminderId('');
     }
   };
 
@@ -379,6 +428,17 @@ export default function AdminPage({ onNavigate }) {
           >
             <RefreshCw size={15} className={loadingClients ? 'spin-icon' : ''} />
             <span>Refresh</span>
+          </button>
+
+          <button 
+            className="btn btn-outline admin-btn-sm" 
+            onClick={handleTriggerReminders}
+            title="Check and send automated 15-minute consultation reminders"
+            disabled={triggeringReminders}
+            style={{ color: 'var(--accent-sage, #566956)', borderColor: 'var(--accent-sage, #566956)' }}
+          >
+            <Bell size={15} className={triggeringReminders ? 'spin-icon' : ''} />
+            <span>{triggeringReminders ? 'Checking...' : 'Run Reminder Sweep'}</span>
           </button>
 
           <button 
@@ -638,6 +698,16 @@ export default function AdminPage({ onNavigate }) {
                         <div className="table-actions">
                           <button
                             className="btn-table-action"
+                            onClick={() => handleSendClientReminder(client.id, client.name)}
+                            title="Send 15-minute Google Meet reminder email now"
+                            disabled={sendingReminderId === client.id}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                          >
+                            <Send size={13} className={sendingReminderId === client.id ? 'spin-icon' : ''} />
+                            <span>{sendingReminderId === client.id ? 'Sending...' : 'Remind'}</span>
+                          </button>
+                          <button
+                            className="btn-table-action"
                             onClick={() => setSelectedClient(client)}
                             title="View Full Client Record"
                           >
@@ -817,9 +887,19 @@ export default function AdminPage({ onNavigate }) {
               </div>
 
               <div className="modal-footer-actions">
+                <button 
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => handleSendClientReminder(selectedClient.id, selectedClient.name)}
+                  disabled={sendingReminderId === selectedClient.id}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                >
+                  <Send size={16} className={sendingReminderId === selectedClient.id ? 'spin-icon' : ''} />
+                  <span>{sendingReminderId === selectedClient.id ? 'Dispatching...' : 'Dispatch 15m Reminder Now'}</span>
+                </button>
                 <a 
                   href={`mailto:${selectedClient.email}?subject=Zenphoria Consultation Next Steps&body=Hello ${selectedClient.name},%0D%0A%0D%0AThank you for reaching out regarding your ${selectedClient.focus_area} consultation...`}
-                  className="btn btn-primary"
+                  className="btn btn-outline"
                   style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                 >
                   <Mail size={16} />

@@ -261,6 +261,66 @@ export const api = {
       throw errorObj;
     }
     return await res.json();
+  },
+
+  // Reminder Automation & Dispatch Endpoints
+  async triggerReminders(token) {
+    const res = await fetchWithFallback('/admin/reminders/trigger', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to trigger reminders' }));
+      const errorObj = new Error(err.detail || 'Trigger failed');
+      errorObj.status = res.status;
+      throw errorObj;
+    }
+    return await res.json();
+  },
+
+  async getReminderStatus(token) {
+    const res = await fetchWithFallback('/admin/reminders/status', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to fetch reminder status' }));
+      const errorObj = new Error(err.detail || 'Fetch failed');
+      errorObj.status = res.status;
+      throw errorObj;
+    }
+    return await res.json();
+  },
+
+  async sendClientReminder(token, clientId, force = true) {
+    const res = await fetchWithFallback(`/admin/clients/${clientId}/send-reminder?force=${force}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to send reminder email' }));
+      const errorObj = new Error(err.detail || 'Dispatch failed');
+      errorObj.status = res.status;
+      throw errorObj;
+    }
+    return await res.json();
+  },
+
+  async cronReminderSweep() {
+    const res = await fetchWithFallback('/cron/reminders', {
+      method: 'POST'
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Failed to run reminder sweep' }));
+      throw new Error(err.detail || 'Cron sweep failed');
+    }
+    return await res.json();
   }
 };
+
 

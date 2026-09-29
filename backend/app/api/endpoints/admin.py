@@ -197,3 +197,49 @@ async def test_email_diagnostic(
         return {"success": False, "error": str(e), "traceback": traceback.format_exc()}
 
 
+@router.post("/reminders/trigger")
+async def trigger_reminders_manually(
+    authenticated: bool = Depends(verify_admin_auth)
+):
+    """Manually triggers the 15-minute reminder scanner loop and immediately delivers due emails."""
+    from app.services.reminder_service import check_and_dispatch_reminders, get_current_ist_time, _SCHEDULER_RUNNING
+    dispatched = check_and_dispatch_reminders()
+    now = get_current_ist_time()
+    return {
+        "success": True,
+        "dispatched_count": dispatched,
+        "server_time_ist": now.strftime("%Y-%m-%d %H:%M:%S IST"),
+        "scheduler_running": _SCHEDULER_RUNNING,
+        "message": f"Successfully processed reminder scan. {dispatched} reminder(s) dispatched."
+    }
+
+
+@router.get("/reminders/status")
+async def get_reminders_status(
+    authenticated: bool = Depends(verify_admin_auth),
+    db: Session = Depends(get_db)
+):
+    """Returns queue status of upcoming bookings and pending 15-minute reminders."""
+    from app.services.reminder_service import get_reminder_queue_status
+    return get_reminder_queue_status(db)
+
+
+@router.post("/clients/{client_id}/send-reminder")
+async def send_client_reminder_on_demand(
+    client_id: str,
+    force: bool = True,
+    authenticated: bool = Depends(verify_admin_auth),
+    db: Session = Depends(get_db)
+):
+    """Dispatches a 15-minute consultation reminder email with Google Meet link to a specific client on demand."""
+    from app.services.reminder_service import dispatch_single_reminder
+    success, msg = dispatch_single_reminder(booking_id=client_id, db=db, force=force)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=msg
+        )
+    return {"success": True, "message": msg}
+
+
+
