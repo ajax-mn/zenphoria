@@ -616,7 +616,7 @@ def send_admin_booking_notification_email(
     load_dotenv(override=True)
     target_email = admin_email.strip()
     if not target_email or "@" not in target_email:
-        target_email = os.getenv("ADMIN_EMAIL", "ajaxmillenian@gmail.com").strip()
+        target_email = os.getenv("ADMIN_EMAIL", "zenphoria88@gmail.com").strip()
 
     subject = f"📅 New Consultation Booked: {client_name} [{scheduled_time_str}]"
     html_content = build_admin_booking_notification_html(

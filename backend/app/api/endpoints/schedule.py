@@ -122,7 +122,7 @@ async def schedule_consultation(
             logger.info("Sent booking confirmation email to %s for booking %s", payload.client_email, booking_id)
 
             # 4. Dispatch instant notification email to Admin with Meet link & client details
-            admin_target = (settings.ADMIN_EMAIL or "ajaxmillenian@gmail.com").strip()
+            admin_target = (settings.ADMIN_EMAIL or "zenphoria88@gmail.com").strip()
             send_admin_booking_notification_email(
                 admin_email=admin_target,
                 client_name=payload.client_name,

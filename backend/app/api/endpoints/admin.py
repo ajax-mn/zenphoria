@@ -178,7 +178,7 @@ async def delete_registered_client(
 
 @router.post("/test-email")
 async def test_email_diagnostic(
-    to_email: str = "ajaxmillenian@gmail.com",
+    to_email: str = "zenphoria88@gmail.com",
     authenticated: bool = Depends(verify_admin_auth)
 ):
     """Diagnostic endpoint to test live SMTP delivery on deployed environment."""

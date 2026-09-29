@@ -25,7 +25,7 @@ class Settings:
     # Google Calendar & Service Account Configuration
     GOOGLE_SERVICE_ACCOUNT_FILE: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE", "")
     GOOGLE_SERVICE_ACCOUNT_JSON: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")
-    ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "ajaxmillenian@gmail.com")
+    ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "zenphoria88@gmail.com")
     ADMIN_CALENDAR_ID: str = os.getenv("ADMIN_CALENDAR_ID", "primary")
     CALENDAR_TIMEZONE: str = os.getenv("CALENDAR_TIMEZONE", "Asia/Kolkata")
 
