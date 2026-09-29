@@ -230,10 +230,8 @@ def create_consultation_event(
 
     time_zone = settings.CALENDAR_TIMEZONE or "Asia/Kolkata"
     
-    # Use specified calendar_id, configured ADMIN_CALENDAR_ID, or ADMIN_EMAIL
-    cal_id = calendar_id or settings.ADMIN_CALENDAR_ID
-    if not cal_id or cal_id == "primary":
-        cal_id = settings.ADMIN_EMAIL or "primary"
+    # Use specified calendar_id, configured ADMIN_CALENDAR_ID, or 'primary'
+    cal_id = calendar_id or settings.ADMIN_CALENDAR_ID or "primary"
 
     # Build attendees list
     attendees: List[Dict[str, str]] = [
