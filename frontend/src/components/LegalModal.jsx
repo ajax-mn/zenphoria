@@ -72,30 +72,44 @@ export default function LegalModal({ isOpen, onClose, defaultTab = 'ethics' }) {
 
   // Filter clauses based on search query
   const filteredClauses = useMemo(() => {
-    if (!currentSection.clauses) return [];
+    if (!currentSection || !Array.isArray(currentSection.clauses)) return [];
     if (!searchQuery.trim()) return currentSection.clauses;
     const q = searchQuery.toLowerCase();
     return currentSection.clauses.filter(clause => 
-      clause.title.toLowerCase().includes(q) ||
-      clause.summary.toLowerCase().includes(q) ||
-      clause.details.some(d => d.toLowerCase().includes(q))
+      (clause?.title && clause.title.toLowerCase().includes(q)) ||
+      (clause?.summary && clause.summary.toLowerCase().includes(q)) ||
+      (Array.isArray(clause?.details) && clause.details.some(d => d && d.toLowerCase().includes(q)))
     );
   }, [currentSection, searchQuery]);
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(`https://www.thezenphoria.com/#${activeTab}`);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2200);
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(`https://www.thezenphoria.com/#${activeTab}`);
+        setCopiedLink(true);
+        setTimeout(() => setCopiedLink(false), 2200);
+      }
+    } catch (err) {
+      console.warn('Clipboard copy failed:', err);
+    }
   };
 
   const handleCopyEmail = (emailStr) => {
-    navigator.clipboard.writeText(emailStr);
-    setCopiedEmail(emailStr);
-    setTimeout(() => setCopiedEmail(null), 2000);
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(emailStr);
+        setCopiedEmail(emailStr);
+        setTimeout(() => setCopiedEmail(null), 2000);
+      }
+    } catch (err) {
+      console.warn('Clipboard copy failed:', err);
+    }
   };
 
   const handlePrint = () => {
-    window.print();
+    if (typeof window !== 'undefined') {
+      window.print();
+    }
   };
 
   const handleSupportSubmit = (e) => {
@@ -287,6 +301,8 @@ export default function LegalModal({ isOpen, onClose, defaultTab = 'ethics' }) {
         {/* ============================================================ */}
         <main style={{
           flex: 1,
+          minWidth: 0,
+          minHeight: 0,
           display: 'flex',
           flexDirection: 'column',
           backgroundColor: '#FAF9F5',
@@ -309,7 +325,7 @@ export default function LegalModal({ isOpen, onClose, defaultTab = 'ethics' }) {
               <input 
                 type="text"
                 className="form-input"
-                placeholder={`Search clauses in ${currentSection.title}...`}
+                placeholder={`Search clauses in ${currentSection?.title || 'Policy'}...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
@@ -410,6 +426,8 @@ export default function LegalModal({ isOpen, onClose, defaultTab = 'ethics' }) {
           {/* Scrollable Document Body */}
           <div style={{
             flex: 1,
+            minWidth: 0,
+            minHeight: 0,
             overflowY: 'auto',
             padding: '28px 32px 40px',
             scrollBehavior: 'smooth'
