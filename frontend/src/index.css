@@ -2238,3 +2238,20 @@ button, input, textarea, select {
   gap: 12px;
 }
 
+/* Legal & Governance Hub Responsive Styling */
+@media (max-width: 860px) {
+  .legal-governance-modal {
+    flex-direction: column !important;
+    height: 94vh !important;
+    max-height: 94vh !important;
+  }
+  
+  .legal-sidebar-col {
+    display: none !important;
+  }
+  
+  .legal-mobile-tabs {
+    display: flex !important;
+  }
+}
+

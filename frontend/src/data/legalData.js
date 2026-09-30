@@ -1,8 +1,129 @@
 /**
- * Comprehensive Legal, Ethical Governance, Privacy, Terms, Support, and Career Policies
+ * Structured Legal, Ethical Governance, Privacy, Terms, Support, and Career Policies
  * for Zenphoria Psychological Wellness & Clinical Education.
  * Aligned with APA Ethical Guidelines, Telehealth Standards, GDPR, DPDP Act 2023, and HIPAA Data Principles.
  */
+
+export const EMERGENCY_CONTACTS = [
+  {
+    region: "India (National Tele-MANAS)",
+    number: "14416",
+    secondary: "1800-891-4416",
+    desc: "24x7 Government of India National Mental Health Helpline (Toll-Free in all languages)",
+    tag: "Toll-Free 24/7",
+    action: "tel:14416"
+  },
+  {
+    region: "India (Vandrevala Foundation)",
+    number: "+91 9999 666 555",
+    secondary: null,
+    desc: "Free 24/7 professional clinical crisis intervention and emotional counseling",
+    tag: "24/7 Clinical Support",
+    action: "tel:+919999666555"
+  },
+  {
+    region: "India (AASRA Prevention)",
+    number: "+91 98204 66726",
+    secondary: null,
+    desc: "Confidential emotional support and crisis suicide prevention hotline",
+    tag: "Helpline",
+    action: "tel:+919820466726"
+  },
+  {
+    region: "United States (988 Lifeline)",
+    number: "988",
+    secondary: "Text 988",
+    desc: "Free 24/7 nationwide suicide & crisis lifeline via phone call or SMS text",
+    tag: "USA Toll-Free",
+    action: "tel:988"
+  },
+  {
+    region: "UK & Europe (Crisis Text Line)",
+    number: "Text SHOUT to 85258",
+    secondary: null,
+    desc: "24/7 free, confidential crisis text support in the United Kingdom",
+    tag: "UK Text Service",
+    action: "sms:85258"
+  }
+];
+
+export const CAREER_POSITIONS = [
+  {
+    id: "clinical-psychologist",
+    title: "Licensed Clinical Psychologist / Counselor",
+    type: "Remote Consultation Practice",
+    commitment: "Flexible Modular Schedule (10–25 hrs/week)",
+    department: "Clinical Practice",
+    badge: "Actively Hiring",
+    description: "Conduct structured 50-minute virtual psycho-educational and emotional health consultations for adult clients seeking cognitive clarity, stress reduction, and relational awareness.",
+    requirements: [
+      "Master's, M.Phil, Psy.D, or Ph.D in Clinical or Counseling Psychology from an accredited institution.",
+      "Active registration with relevant licensing bodies (e.g. RCI in India, APA / State Board equivalent globally).",
+      "Minimum 2+ years of clinical consultation or psychotherapeutic experience.",
+      "Proficiency with telehealth technology and evidence-based frameworks (CBT, ACT, Somatic & Mindfulness models)."
+    ],
+    perks: [
+      "Zero administrative burden: automated scheduling, Meet links, and client management handled by platform",
+      "Competitive per-session honorarium paid bi-weekly",
+      "Access to interdisciplinary peer consultation and clinical case supervision circles"
+    ]
+  },
+  {
+    id: "science-writer",
+    title: "Behavioral Science & Mental Health Researcher",
+    type: "Contract / Remote",
+    commitment: "Project-Based",
+    department: "Content & Research",
+    badge: "Open Role",
+    description: "Author high-impact, evidence-informed clinical essays, frameworks, and psycho-educational guides for the Zenphoria Journal and Five Pillars curriculum.",
+    requirements: [
+      "Postgraduate qualification in Neuroscience, Psychology, or Cognitive Behavioral Sciences.",
+      "Exceptional academic-to-accessible translation ability with rigorous citation standards.",
+      "Portfolio of published mental health or scientific literature."
+    ],
+    perks: [
+      "Featured author credit on official platform publications",
+      "Flexible asynchronous workflow with comprehensive editorial support"
+    ]
+  },
+  {
+    id: "client-experience",
+    title: "Clinical Operations & Client Experience Lead",
+    type: "Remote (IST Timezone)",
+    commitment: "Full-Time or Part-Time",
+    department: "Operations",
+    badge: "New Position",
+    description: "Coordinate intake workflows, support client onboarding, manage scheduling continuity, and ensure high-touch care across all telehealth touchpoints.",
+    requirements: [
+      "Background in Healthcare Administration, Psychology, or Premium Client Concierge.",
+      "Empathetic, clear written communication with meticulous attention to detail.",
+      "Experience with modern workspace tools and customer support platforms."
+    ],
+    perks: [
+      "Direct collaboration with clinical leadership",
+      "Professional wellness stipend and learning allowance"
+    ]
+  }
+];
+
+export const SUPPORT_FAQS = [
+  {
+    question: "Where do I access my Google Meet video link?",
+    answer: "Your unique, encrypted Google Meet link is generated automatically upon booking and displayed on your confirmation screen. It is also emailed to you immediately and re-sent as an automated reminder 15 minutes prior to your session start time."
+  },
+  {
+    question: "How do I reschedule or adjust my consultation time?",
+    answer: "You may reschedule your consultation up to 24 hours prior to the session start time by emailing support or contacting our concierge desk via WhatsApp with your Reference ID. We will gladly adjust your calendar slot."
+  },
+  {
+    question: "Are consultations covered by health insurance or corporate wellness?",
+    answer: "Depending on your corporate wellness policy or private insurer, invoices containing professional provider registration numbers and clinical tax receipts can be provided upon request by contacting support."
+  },
+  {
+    question: "What technology or equipment do I need for my session?",
+    answer: "A stable internet connection, a quiet and private space, and a computer or mobile device with a working camera and microphone. Google Meet runs directly in your web browser with no download required."
+  }
+];
 
 export const LEGAL_SECTIONS = {
   ethics: {
@@ -11,38 +132,50 @@ export const LEGAL_SECTIONS = {
     subtitle: "Our unwavering commitment to professional integrity, clinical containment, and client welfare.",
     lastUpdated: "January 2026",
     badge: "Ethical Standards",
-    content: [
+    icon: "ShieldCheck",
+    clauses: [
       {
-        heading: "1. Scope of Practice & Educational Demarcation",
-        text: `Zenphoria operates as an advanced clinical wellness and psycho-educational consultation platform. Our structured modular sessions, reflective frameworks, and psycho-educational materials are designed to enhance emotional regulation, relational awareness, cognitive resilience, and executive clarity.
-
-Zenphoria services do not constitute emergency psychiatric intervention, crisis triage, or inpatient clinical hospital care. If you are experiencing acute psychiatric distress, suicidal ideation, or severe self-harm urges, you must immediately contact emergency services or dedicated national crisis lifelines.`
+        number: "01",
+        title: "Scope of Practice & Psycho-Educational Demarcation",
+        badge: "Essential Scope",
+        summary: "Clear distinction between structured psycho-education and inpatient hospital emergency care.",
+        details: [
+          "Zenphoria operates as an advanced clinical wellness and psycho-educational consultation platform. Our structured modular sessions, reflective frameworks, and psycho-educational materials are designed to enhance emotional regulation, relational awareness, cognitive resilience, and executive clarity.",
+          "Zenphoria services do not constitute emergency psychiatric intervention, crisis triage, or inpatient clinical hospital care. If you are experiencing acute psychiatric distress, suicidal ideation, or severe self-harm urges, you must immediately contact emergency services or dedicated national crisis lifelines."
+        ]
       },
       {
-        heading: "2. Crisis & Emergency Support Protocols",
-        text: `We maintain active referrals to 24/7 dedicated crisis hotlines:
-• India National Tele-MANAS: 14416 or 1800-891-4416 (24x7 Toll-Free)
-• Vandrevala Foundation Helpline: +91 9999 666 555
-• AASRA Suicide Prevention: +91 98204 66726
-• United States Suicide & Crisis Lifeline: 988 (Call or Text 24/7)
-• United Kingdom & Europe Crisis Text Line: Text SHOUT to 85258
-
-Our practitioners are bound by mandatory reporting duties in circumstances where there is imminent, verifiable danger to the life of the client or identifiable third parties.`
+        number: "02",
+        title: "Confidentiality & Statutory Non-Disclosure Exceptions",
+        badge: "Strict Privacy",
+        summary: "Intake data and consultation dialogues are held in strict clinical confidentiality.",
+        details: [
+          "Information shared during intake assessments, video sessions, and written reflections is held in strict professional confidence under APA and national psychological ethical standards.",
+          "Exceptions to confidentiality exist strictly and solely where mandated by law:",
+          "• Verifiable threat of imminent physical harm or loss of life to self or others.",
+          "• Reasonable suspicion of child, elder, or dependent adult abuse, neglect, or exploitation.",
+          "• Mandatory subpoena or court order issued by a competent judicial court of law."
+        ]
       },
       {
-        heading: "3. Confidentiality & Non-Disclosure",
-        text: `Every consultation is conducted within strict professional confidentiality standards. Information shared during intake assessments, video sessions, and written reflections is held in strict confidence.
-
-Exceptions to confidentiality exist solely where mandated by law:
-1. Verifiable threat of imminent physical harm to self or others.
-2. Reasonable suspicion of child, elder, or dependent adult abuse/neglect.
-3. Official subpoena or court mandate issued by a competent judicial authority.`
+        number: "03",
+        title: "Practitioner Standards & Prohibition of Dual Relationships",
+        badge: "Practitioner Code",
+        summary: "Verified postgraduate credentials with strict ethical conduct guidelines.",
+        details: [
+          "All Zenphoria practitioners hold recognized postgraduate clinical psychology, counseling, or behavioral science credentials (M.Phil / Ph.D / Psy.D) and maintain active registration with appropriate regulatory authorities.",
+          "Practitioners strictly prohibit dual relationships, financial conflicts of interest, and exploitation in any therapeutic, personal, or commercial dimension."
+        ]
       },
       {
-        heading: "4. Practitioner Qualifications & Dual Relationships",
-        text: `All Zenphoria practitioners hold recognized postgraduate clinical psychology, counseling, or behavioral science credentials and adhere to the American Psychological Association (APA) and Rehabilitation Council of India (RCI) ethical guidelines.
-
-Practitioners strictly prohibit dual relationships, conflicts of interest, and exploitation in any therapeutic, financial, or personal dimension.`
+        number: "04",
+        title: "Informed Consent & Voluntary Participation",
+        badge: "Client Autonomy",
+        summary: "Clients retain complete autonomy over their consultation journey at all stages.",
+        details: [
+          "Participation in Zenphoria consultations is entirely voluntary. Clients have the right to decline specific exercises, request alternative modalities, or discontinue sessions at any stage without prejudice.",
+          "Prior to commencing structured modular series, clients receive clear guidance on session duration (50 mins), goals, and behavioral integration practices."
+        ]
       }
     ]
   },
@@ -50,37 +183,54 @@ Practitioners strictly prohibit dual relationships, conflicts of interest, and e
   privacy: {
     id: "privacy",
     title: "Privacy Policy & Data Protection",
-    subtitle: "Transparent disclosure of how your personal, consultation, and diagnostic data is protected.",
+    subtitle: "Transparent disclosure of how your personal, consultation, and technical metadata is secured.",
     lastUpdated: "January 2026",
     badge: "GDPR & DPDP Compliant",
-    content: [
+    icon: "Lock",
+    clauses: [
       {
-        heading: "1. Information We Collect",
-        text: `To facilitate seamless consultation scheduling and clinical delivery, Zenphoria collects:
-• Identity & Contact Data: Full name, email address, contact number, and timezone.
-• Consultation Preferences: Self-selected focus areas (e.g. Stress & Anxiety, Relational Dynamics), cadence preferences, and optional reflection notes.
-• Scheduling & Technical Metadata: Timestamps of bookings, Google Meet identifiers, device IP addresses, browser types, and email delivery receipts.`
+        number: "01",
+        title: "Information We Collect & Lawful Processing Bases",
+        badge: "Data Categories",
+        summary: "We collect only minimal necessary data to schedule and deliver consultation services.",
+        details: [
+          "• Identity & Contact Details: Full name, verified email address, contact phone, and timezone.",
+          "• Consultation Intake Preferences: Primary focus area (e.g. Stress & Anxiety, Relational Dynamics), cadence preferences, and optional reflection notes.",
+          "• Technical & Session Metadata: Booking reference IDs, Google Meet conferencing identifiers, automated email delivery timestamps, and encrypted IP logs."
+        ]
       },
       {
-        heading: "2. How We Use & Process Your Data",
-        text: `We process data strictly under lawful bases (Contractual Fulfillment, Legitimate Interest, and Explicit Consent):
-• Generating unique Google Calendar events and secure Google Meet encrypted video conference links.
-• Dispatching automated booking confirmations, 15-minute pre-session reminders, and administrative session alerts via verified HTTPS email infrastructure (Resend API).
-• Optimizing platform speed, performance diagnostics, and fraud prevention.`
+        number: "02",
+        title: "Zero-Data-Selling Guarantee & Commercial Independence",
+        badge: "Zero Commercialization",
+        summary: "We never monetize, sell, or trade client personal information or clinical notes.",
+        details: [
+          "Zenphoria operates under a strict Zero-Data-Selling policy. We NEVER sell, rent, monetize, or trade client personal information, intake notes, or behavioral diagnostics to advertisers, data brokers, or external commercial third parties.",
+          "Your data is used exclusively to facilitate your scheduled sessions and deliver platform notifications."
+        ]
       },
       {
-        heading: "3. Data Retention & Zero-Data-Selling Guarantee",
-        text: `• We NEVER sell, rent, monetize, or trade client personal information or clinical notes to advertisers, data brokers, or external commercial third parties.
-• Consultation intake notes are encrypted at rest using industry-standard AES-256 and PostgreSQL TLS in transit.
-• Data is retained only as long as necessary to provide your ongoing clinical cadence or comply with statutory accounting and legal obligations.`
+        number: "03",
+        title: "Technical Security & Encryption Standards",
+        badge: "AES-256 & TLS 1.3",
+        summary: "State-of-the-art encryption across databases, cloud endpoints, and video transmissions.",
+        details: [
+          "• Data in Transit: All API transmissions, scheduling requests, and notifications are protected with modern TLS 1.3 encryption.",
+          "• Data at Rest: Databases are encrypted using industry-standard AES-256 protocols on secure PostgreSQL infrastructure.",
+          "• Video Security: Video consultations utilize Google Meet's enterprise infrastructure with peer encryption and zero permanent session video recording."
+        ]
       },
       {
-        heading: "4. Your Legal Rights (GDPR & DPDP Act 2023)",
-        text: `As a data subject, you hold the right to:
-• Access & Portability: Request an export of all personal data held in your account.
-• Erasure (Right to Be Forgotten): Request complete purge of your contact data and booking history from our database.
-• Rectification: Update or correct inaccurate demographic details.
-To exercise any data rights, email our Data Protection Officer directly at privacy@thezenphoria.com or consultation@ww.thezenphoria.com.`
+        number: "04",
+        title: "Your Data Subject Rights (GDPR & DPDP Act 2023)",
+        badge: "Data Sovereignty",
+        summary: "Full rights to access, export, rectify, or completely erase your personal records.",
+        details: [
+          "• Right to Erasure (Right to Be Forgotten): You may request the complete purging of your booking history and contact details from our database at any time.",
+          "• Right to Access & Portability: Request an export of all personal data held in association with your email.",
+          "• Right to Rectification: Correct or update any inaccurate personal demographic details.",
+          "To exercise your rights, contact our Data Protection Officer at privacy@thezenphoria.com."
+        ]
       }
     ]
   },
@@ -88,60 +238,63 @@ To exercise any data rights, email our Data Protection Officer directly at priva
   terms: {
     id: "terms",
     title: "Terms of Service & Consultation Agreement",
-    subtitle: "The legal terms governing your engagement with the Zenphoria platform and sessions.",
+    subtitle: "The legal terms and mutual agreements governing consultations and platform usage.",
     lastUpdated: "January 2026",
-    badge: "Legally Binding Agreement",
-    content: [
+    badge: "Legally Binding",
+    icon: "FileText",
+    clauses: [
       {
-        heading: "1. Agreement & Age Eligibility",
-        text: `By accessing the Zenphoria platform (thezenphoria.com) or scheduling a consultation, you agree to be bound by these Terms of Service. You affirm that you are at least 18 years of age or possess legal parental/guardian consent to receive psycho-educational wellness services.`
+        number: "01",
+        title: "Platform Engagement & Age Eligibility",
+        badge: "Eligibility",
+        summary: "Requirements for booking and utilizing Zenphoria services.",
+        details: [
+          "By accessing the Zenphoria platform (thezenphoria.com) or reserving a consultation slot, you agree to comply with and be legally bound by these Terms of Service.",
+          "Clients must be at least 18 years of age or have verified parental/legal guardian consent to participate in psychological wellness consultations."
+        ]
       },
       {
-        heading: "2. Booking, Rescheduling & Cancellation Policy",
-        text: `• Punctuality: Sessions commence promptly at the scheduled time via the provided Google Meet link.
-• Rescheduling: Clients may reschedule consultations up to 24 hours prior to the session start time at no additional charge.
-• Late Cancellations & No-Shows: Cancellations made within less than 12 hours of the scheduled time may be subject to forfeiture of the allocated consultation slot to respect practitioner scheduling.`
+        number: "02",
+        title: "Punctuality, Rescheduling & Cancellation Policy",
+        badge: "24-Hour Policy",
+        summary: "Clear guidelines regarding appointment timeliness and slot allocation.",
+        details: [
+          "• Punctuality: Consultations begin promptly at the scheduled time via the provided Google Meet link. Late arrivals may reduce session duration to preserve subsequent appointments.",
+          "• 24-Hour Rescheduling: You may reschedule your consultation up to 24 hours prior to the scheduled start time at no penalty.",
+          "• Late Cancellations & No-Shows: Cancellations made with less than 12 hours notice or unnotified absences may result in forfeiture of the reserved appointment slot to respect practitioner scheduling."
+        ]
       },
       {
-        heading: "3. Video Consultation Code of Conduct",
-        text: `• Safe Environment: Clients must join video sessions from a private, secure location free from distracting third parties.
-• Recording Prohibition: Unauthorized audio, video, or screenshot recording of consultations by either client or practitioner without explicit prior written mutual consent is strictly prohibited to preserve clinical privacy.
-• Intoxication: Practitioners reserve the right to terminate any session immediately if a client is under severe intoxication or exhibiting abusive behavior.`
+        number: "03",
+        title: "Video Consultation Protocol & Anti-Recording Policy",
+        badge: "Strict Conduct",
+        summary: "Preserving privacy and mutual trust during virtual consultation meetings.",
+        details: [
+          "• Private Environment: Clients must join sessions from a quiet, secure, private location free from unauthorized third parties.",
+          "• Absolute Prohibition of Recording: Audio, video, or screen recording of consultation meetings by either client or practitioner without explicit prior written mutual consent is strictly prohibited.",
+          "• Respectful Engagement: Practitioners reserve the right to immediately terminate a session in the event of abusive, threatening, or severely disruptive conduct."
+        ]
       },
       {
-        heading: "4. Intellectual Property & Limitation of Liability",
-        text: `All diagnostic frameworks, Five Pillars concepts, psycho-educational articles, and curriculum materials published by Zenphoria remain the exclusive intellectual property of Zenphoria.
-
-To the maximum extent permitted by applicable law, Zenphoria and its practitioners shall not be liable for indirect, incidental, or consequential damages arising from reliance on platform educational materials.`
+        number: "04",
+        title: "Intellectual Property & Intellectual Asset Protection",
+        badge: "IP Rights",
+        summary: "Ownership of the Five Pillars frameworks, diagnostic models, and clinical literature.",
+        details: [
+          "All proprietary frameworks, visual models, psycho-educational articles, and curriculum materials published across the Zenphoria platform remain the exclusive intellectual property of Zenphoria.",
+          "Materials may not be reproduced, republished, or commercialized without explicit written permission."
+        ]
       }
     ]
   },
 
   support: {
     id: "support",
-    title: "Contact & Clinical Support",
-    subtitle: "Dedicated client assistance for appointments, technical support, and clinical inquiries.",
-    lastUpdated: "Active 24/7",
-    badge: "Direct Support Channels",
-    content: [
-      {
-        heading: "1. Direct Communication Channels",
-        text: `Our clinical administration team is available Monday through Saturday (9:00 AM – 8:00 PM IST):
-• Official Support Email: consultation@ww.thezenphoria.com
-• Administration Desk: zenphoria88@gmail.com
-• WhatsApp Concierge: Direct WhatsApp message available on portal`
-      },
-      {
-        heading: "2. Frequently Asked Inquiries",
-        text: `• Meeting Link Issues: Your unique Google Meet link is provided on your booking confirmation screen and re-sent via email 15 minutes before session time.
-• Calendar Synchronization: If your Google Calendar invite does not automatically appear, check your spam/promotions folder or click the Google Meet link directly from your reminder email.
-• Invoicing & Corporate Wellness: Receipts with relevant professional taxation codes can be generated upon request by emailing support.`
-      },
-      {
-        heading: "3. Clinical Governance Inquiries",
-        text: `For formal clinical inquiries, practitioner verification, or feedback regarding your consultation experience, reach out directly to the clinical director at clinical-director@thezenphoria.com.`
-      }
-    ]
+    title: "Client Care & Support Desk",
+    subtitle: "Immediate assistance with scheduling, technical access, invoicing, and clinical care.",
+    lastUpdated: "Active Support",
+    badge: "Direct Helpdesk",
+    icon: "Headphones"
   },
 
   careers: {
@@ -149,24 +302,7 @@ To the maximum extent permitted by applicable law, Zenphoria and its practitione
     title: "Careers & Clinical Fellowship",
     subtitle: "Join our interdisciplinary collective of licensed psychologists, researchers, and educators.",
     lastUpdated: "Q1 2026",
-    badge: "Open Opportunities",
-    content: [
-      {
-        heading: "1. Our Clinical Philosophy",
-        text: `Zenphoria is reimagining modern mental health education by bridging clinical rigor with elegant, intuitive digital experiences. We are building a high-trust environment where practitioners can focus on impactful client consultations without administrative friction.`
-      },
-      {
-        heading: "2. Open Practice Positions",
-        text: `We invite applications for:
-• Licensed Clinical Psychologists / Counselors (M.Phil / Ph.D / PsyD / RCI Registered): Telehealth consultation practice with flexible modular scheduling.
-• Behavioral Health Researchers & Science Writers: Authoring evidence-informed frameworks for our Journal and Pillar curricula.
-• Clinical Operations & Client Experience Associates: Supporting scheduling, intake workflows, and platform continuity.`
-      },
-      {
-        heading: "3. How to Apply",
-        text: `Please submit your Curriculum Vitae, statement of clinical orientation, and proof of professional registration to:
-careers@thezenphoria.com (cc: zenphoria88@gmail.com) with the subject line: 'Clinical Fellowship Application - [Your Name]'.`
-      }
-    ]
+    badge: "Fellowship & Practice",
+    icon: "Briefcase"
   }
 };
