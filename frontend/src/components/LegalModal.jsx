@@ -58,8 +58,8 @@ export default function LegalModal({ isOpen, onClose, defaultTab = 'ethics' }) {
     setSearchQuery('');
   }, [activeTab]);
 
-  if (!isOpen) return null;
-
+  // IMPORTANT: All hooks and derived values MUST be above `if (!isOpen) return null`
+  // to avoid violating React's Rules of Hooks.
   const currentSection = LEGAL_SECTIONS[activeTab] || LEGAL_SECTIONS.ethics;
 
   const navItems = [
@@ -81,6 +81,8 @@ export default function LegalModal({ isOpen, onClose, defaultTab = 'ethics' }) {
       (Array.isArray(clause?.details) && clause.details.some(d => d && d.toLowerCase().includes(q)))
     );
   }, [currentSection, searchQuery]);
+
+  if (!isOpen) return null;
 
   const handleCopyLink = () => {
     try {
