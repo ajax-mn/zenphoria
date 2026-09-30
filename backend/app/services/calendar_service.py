@@ -233,12 +233,15 @@ def create_consultation_event(
     # Use specified calendar_id, configured ADMIN_CALENDAR_ID, or 'primary'
     cal_id = calendar_id or settings.ADMIN_CALENDAR_ID or "primary"
 
-    # Build attendees list
-    attendees: List[Dict[str, str]] = [
-        {"email": client_email.strip()}
-    ]
+    # Build attendees list.
+    # NOTE: The client is intentionally NOT added as an attendee.
+    # Adding clients as attendees causes Google Calendar to auto-send them
+    # a calendar invite email (from Google, not Zenphoria).
+    # Zenphoria's own branded confirmation email handles all client communication.
+    # Only the admin organizer is added here so the event appears on their calendar.
+    attendees: List[Dict[str, str]] = []
     admin_email = (settings.ADMIN_EMAIL or "").strip()
-    if admin_email and admin_email.lower() != client_email.strip().lower():
+    if admin_email:
         attendees.append({"email": admin_email})
 
     # Prepare Google Meet conference request
@@ -287,13 +290,15 @@ def create_consultation_event(
     service = get_calendar_service()
     created_event = None
 
-    # Attempt 1: Full insert with native Google Meet conference creation and attendees
+    # Attempt 1: Full insert with native Google Meet conference creation.
+    # sendUpdates="none" prevents Google Calendar from auto-emailing any attendees.
+    # Zenphoria sends its own branded confirmation email to the client separately.
     try:
         created_event = service.events().insert(
             calendarId=cal_id,
             body=event_body,
             conferenceDataVersion=1,
-            sendUpdates="all"
+            sendUpdates="none"
         ).execute()
     except HttpError as http_err:
         err_msg = str(http_err)
@@ -312,7 +317,7 @@ def create_consultation_event(
             created_event = service.events().insert(
                 calendarId=cal_id,
                 body=fallback_body,
-                sendUpdates="all"
+                sendUpdates="none"
             ).execute()
         except HttpError as http_err2:
             # If still failed, try removing attendees completely
@@ -321,7 +326,7 @@ def create_consultation_event(
                 created_event = service.events().insert(
                     calendarId=cal_id,
                     body=fallback_body,
-                    sendUpdates="all"
+                    sendUpdates="none"
                 ).execute()
             except Exception as final_err:
                 logger.error("Failed creating calendar event on %s: %s", cal_id, final_err)
