@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Footer({ onNavigate }) {
+export default function Footer({ onNavigate, onOpenLegal }) {
   return (
     <footer className="site-footer">
       <div className="footer-inner">
@@ -47,17 +47,17 @@ export default function Footer({ onNavigate }) {
           <div className="footer-nav-section">
             <div className="footer-section-title">Legal & Support</div>
             <ul className="footer-links-list">
-              <li><span className="footer-link">Ethics</span></li>
-              <li><span className="footer-link">Privacy Policy</span></li>
-              <li><span className="footer-link">Terms of Service</span></li>
-              <li><span className="footer-link">Contact Support</span></li>
-              <li><span className="footer-link">Careers</span></li>
+              <li><span className="footer-link" onClick={() => onOpenLegal && onOpenLegal('ethics')}>Ethics</span></li>
+              <li><span className="footer-link" onClick={() => onOpenLegal && onOpenLegal('privacy')}>Privacy Policy</span></li>
+              <li><span className="footer-link" onClick={() => onOpenLegal && onOpenLegal('terms')}>Terms of Service</span></li>
+              <li><span className="footer-link" onClick={() => onOpenLegal && onOpenLegal('support')}>Contact Support</span></li>
+              <li><span className="footer-link" onClick={() => onOpenLegal && onOpenLegal('careers')}>Careers</span></li>
             </ul>
           </div>
         </div>
 
         <div className="footer-copyright">
-          © 2024 Zenphoria. All rights reserved. Psychological education for the modern era.
+          © 2026 Zenphoria. All rights reserved. Psychological education for the modern era.
         </div>
       </div>
     </footer>

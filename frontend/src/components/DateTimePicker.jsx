@@ -100,12 +100,10 @@ export default function DateTimePicker({ value, onChange, onISOChange }) {
     }
   };
 
-  // Trigger initial value if needed
+  // Trigger initial value on mount and keep parent in sync
   React.useEffect(() => {
-    if (!value) {
-      updateParent(selectedDate, selectedTimeSlot, customStartTime, customEndTime);
-    }
-  }, []);
+    updateParent(selectedDate, selectedTimeSlot, customStartTime, customEndTime);
+  }, [selectedDate, selectedTimeSlot, customStartTime, customEndTime]);
 
   const handleSelectDate = (dateStr) => {
     setSelectedDate(dateStr);

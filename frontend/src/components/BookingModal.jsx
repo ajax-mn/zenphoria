@@ -9,6 +9,13 @@ export default function BookingModal({ isOpen, onClose, initialData }) {
   const [isLoading, setIsLoading] = useState(false);
   const [meetLink, setMeetLink] = useState('');
   const [scheduleError, setScheduleError] = useState('');
+  const getDefaultIsoDatetime = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    const dateStr = d.toISOString().split('T')[0];
+    return `${dateStr}T09:00:00`;
+  };
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -22,6 +29,7 @@ export default function BookingModal({ isOpen, onClose, initialData }) {
   // Pre-fill preferences when modal opens from consultation assessment
   useEffect(() => {
     if (isOpen) {
+      const fallbackIso = getDefaultIsoDatetime();
       if (initialData) {
         setFormData({
           name: initialData.name || '',
@@ -29,9 +37,14 @@ export default function BookingModal({ isOpen, onClose, initialData }) {
           focusArea: initialData.focusArea || 'Stress & Anxiety',
           cadence: initialData.cadence || 'Bi-Weekly Modular Cadence',
           preferredDate: initialData.preferredDate || '',
-          isoDatetime: '',
+          isoDatetime: initialData.isoDatetime || fallbackIso,
           notes: initialData.notes || ''
         });
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          isoDatetime: prev.isoDatetime || fallbackIso
+        }));
       }
       setMeetLink('');
       setScheduleError('');
@@ -47,32 +60,33 @@ export default function BookingModal({ isOpen, onClose, initialData }) {
     setScheduleError('');
     setMeetLink('');
 
+    const targetIso = formData.isoDatetime || getDefaultIsoDatetime();
+
     // Step 1: Call the schedule-consultation API to create Google Calendar event + Meet link
     let calendarSuccess = false;
-    if (formData.isoDatetime) {
-      const scheduleResult = await api.scheduleConsultation({
-        client_name: formData.name,
-        client_email: formData.email,
-        preferred_datetime: formData.isoDatetime,
-        duration_minutes: 50,
-        focus_area: formData.focusArea,
-        notes: formData.notes || ''
-      });
+    const scheduleResult = await api.scheduleConsultation({
+      client_name: formData.name,
+      client_email: formData.email,
+      preferred_datetime: targetIso,
+      duration_minutes: 50,
+      focus_area: formData.focusArea,
+      notes: formData.notes || ''
+    });
 
-      if (scheduleResult && scheduleResult.success && scheduleResult.meet_link) {
-        setMeetLink(scheduleResult.meet_link);
-        calendarSuccess = true;
-      } else {
-        // Calendar scheduling failed but we'll still save the booking
-        const errorMsg = scheduleResult?.error || 'Could not create calendar event';
-        console.warn('Calendar scheduling issue:', errorMsg);
-        setScheduleError(errorMsg);
-      }
+    if (scheduleResult && scheduleResult.success && scheduleResult.meet_link) {
+      setMeetLink(scheduleResult.meet_link);
+      calendarSuccess = true;
+    } else {
+      // Calendar scheduling returned an issue but we'll ensure the booking is fully saved
+      const errorMsg = scheduleResult?.error || 'Could not create calendar event';
+      console.warn('Calendar scheduling notice:', errorMsg);
+      setScheduleError(errorMsg);
     }
 
-    // Step 2: If calendar scheduling failed or no ISO datetime, save as regular booking
+    // Step 2: Fallback saving if scheduleConsultation endpoint was unreachable
     if (!calendarSuccess) {
       const formattedNotes = [
+        `[Scheduled: ${targetIso}]`,
         formData.preferredDate ? `[Preferred Date & Time: ${formData.preferredDate}]` : '',
         formData.notes ? `Notes: ${formData.notes}` : ''
       ].filter(Boolean).join(' ');

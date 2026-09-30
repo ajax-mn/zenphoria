@@ -4,6 +4,7 @@ import NavDrawer from './components/NavDrawer';
 import Footer from './components/Footer';
 import BookingModal from './components/BookingModal';
 import ArticleModal from './components/ArticleModal';
+import LegalModal from './components/LegalModal';
 
 import HomePage from './pages/HomePage';
 import PillarsPage from './pages/PillarsPage';
@@ -28,6 +29,8 @@ export default function App() {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [bookingData, setBookingData] = useState(null);
   const [activeArticle, setActiveArticle] = useState(null);
+  const [isLegalOpen, setIsLegalOpen] = useState(false);
+  const [legalTab, setLegalTab] = useState('ethics');
 
   const handleNavigate = (page) => {
     setCurrentPage(page);
@@ -69,6 +72,15 @@ export default function App() {
   const handleCloseBooking = () => {
     setIsBookingOpen(false);
     setBookingData(null);
+  };
+
+  const handleOpenLegal = (tab = 'ethics') => {
+    setLegalTab(tab);
+    setIsLegalOpen(true);
+  };
+
+  const handleCloseLegal = () => {
+    setIsLegalOpen(false);
   };
 
   const renderPage = () => {
@@ -135,7 +147,10 @@ export default function App() {
       </main>
 
       {/* Responsive Footer */}
-      <Footer onNavigate={handleNavigate} />
+      <Footer 
+        onNavigate={handleNavigate} 
+        onOpenLegal={handleOpenLegal}
+      />
 
       {/* Navigation Drawer for Mobile */}
       <NavDrawer 
@@ -157,6 +172,13 @@ export default function App() {
       <ArticleModal 
         article={activeArticle} 
         onClose={() => setActiveArticle(null)} 
+      />
+
+      {/* Comprehensive Legal, Ethics, Terms & Support Modal */}
+      <LegalModal 
+        isOpen={isLegalOpen}
+        onClose={handleCloseLegal}
+        defaultTab={legalTab}
       />
     </div>
   );
