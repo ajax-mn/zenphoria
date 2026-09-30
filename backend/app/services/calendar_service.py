@@ -311,7 +311,8 @@ def create_consultation_event(
         try:
             created_event = service.events().insert(
                 calendarId=cal_id,
-                body=fallback_body
+                body=fallback_body,
+                sendUpdates="all"
             ).execute()
         except HttpError as http_err2:
             # If still failed, try removing attendees completely
@@ -319,7 +320,8 @@ def create_consultation_event(
             try:
                 created_event = service.events().insert(
                     calendarId=cal_id,
-                    body=fallback_body
+                    body=fallback_body,
+                    sendUpdates="all"
                 ).execute()
             except Exception as final_err:
                 logger.error("Failed creating calendar event on %s: %s", cal_id, final_err)

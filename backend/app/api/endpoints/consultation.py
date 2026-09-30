@@ -21,6 +21,10 @@ async def submit_consultation_preference(
     cadence = payload.cadence or "Bi-Weekly Modular Cadence"
     client_name = payload.name or "Consultation Client"
 
+    from app.services.reminder_service import parse_datetime_from_notes, extract_meet_link
+
+    scheduled_dt = parse_datetime_from_notes(payload.notes or "")
+
     entry = BookingDB(
         id=booking_id,
         name=client_name,
@@ -29,11 +33,17 @@ async def submit_consultation_preference(
         cadence=cadence,
         notes=payload.notes or "",
         status="confirmed",
+        scheduled_at=scheduled_dt,
+        reminder_sent=False,
         created_at=datetime.utcnow()
     )
+    entry.meet_link = extract_meet_link(entry)
+
     db.add(entry)
     db.commit()
     db.refresh(entry)
+
+    time_display = scheduled_dt.strftime("%b %d, %Y at %I:%M %p IST") if scheduled_dt else ""
 
     # Trigger async email confirmation sending in background
     background_tasks.add_task(
@@ -42,7 +52,9 @@ async def submit_consultation_preference(
         name=client_name,
         focus_area=payload.focus_area,
         cadence=cadence,
-        booking_id=booking_id
+        booking_id=booking_id,
+        meet_link=entry.meet_link,
+        scheduled_time_str=time_display
     )
 
     return entry

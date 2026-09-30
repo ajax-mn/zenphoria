@@ -47,16 +47,41 @@ def extract_meet_link(booking: BookingDB) -> str:
         if match:
             return match.group(0)
 
-    # Generate a fallback Google Meet link if none exists
+    # Generate a permanent standard Google Meet link if none exists
     fallback = f"https://meet.google.com/{uuid.uuid4().hex[:3]}-{uuid.uuid4().hex[:4]}-{uuid.uuid4().hex[:3]}"
     return fallback
 
 
+def parse_datetime_from_notes(notes: str) -> Optional[datetime]:
+    """Attempts to recover scheduled datetime from notes if scheduled_at was not directly set."""
+    if not notes:
+        return None
+    # Look for [Scheduled: ...] or ISO format
+    iso_match = re.search(r"\[Scheduled:\s*([0-9T:\-+Z]+)\]", notes, re.IGNORECASE)
+    if iso_match:
+        from app.services.calendar_service import _parse_datetime
+        try:
+            return _parse_datetime(iso_match.group(1))
+        except Exception:
+            pass
+
+    # Look for [Preferred Date & Time: YYYY-MM-DD...]
+    date_match = re.search(r"([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2})", notes)
+    if date_match:
+        from app.services.calendar_service import _parse_datetime
+        try:
+            return _parse_datetime(date_match.group(1))
+        except Exception:
+            pass
+
+    return None
+
+
 def check_and_dispatch_reminders() -> int:
     """
-    Scans the database for consultations scheduled within the 10-15 minute trigger window
-    (with grace window for recovering after server idle sleep) and delivers the Google Meet
-    joining link via email.
+    Scans the database for consultations scheduled within the trigger window
+    (up to 25 minutes ahead, and recovering up to 3 hours past start for server wakeups)
+    and delivers the Google Meet joining link via email.
 
     Returns:
         Number of reminder emails successfully dispatched.
@@ -64,17 +89,33 @@ def check_and_dispatch_reminders() -> int:
     dispatched_count = 0
     now = get_current_ist_time()
 
-    # Lookahead window: 16 minutes ahead (to ensure 15m mark is captured cleanly)
-    # Grace window: 45 minutes past start (to recover any missed reminders if server was sleeping on free-tier hosting)
-    lookahead_window = now + timedelta(minutes=16)
-    grace_window = now - timedelta(minutes=45)
+    # Lookahead window: 25 minutes ahead (captures 20m, 15m, 10m before session starts)
+    # Grace window: 3 hours past start (to guarantee recovery if cloud host was in idle sleep)
+    lookahead_window = now + timedelta(minutes=25)
+    grace_window = now - timedelta(hours=3)
 
     db: Session = SessionLocal()
     try:
         # Excluded cancelled statuses
         cancelled_statuses = ["cancelled", "canceled", "refunded"]
 
-        # Find bookings with scheduled_at within window and reminder not yet sent
+        # 1. Recover any records where scheduled_at is missing but present in notes
+        unassigned_bookings = db.query(BookingDB).filter(
+            or_(BookingDB.reminder_sent == False, BookingDB.reminder_sent.is_(None)),
+            BookingDB.scheduled_at.is_(None),
+            BookingDB.notes.isnot(None)
+        ).all()
+
+        for u_bk in unassigned_bookings:
+            recovered_dt = parse_datetime_from_notes(u_bk.notes)
+            if recovered_dt:
+                u_bk.scheduled_at = recovered_dt
+                if not u_bk.meet_link:
+                    u_bk.meet_link = extract_meet_link(u_bk)
+                db.commit()
+                logger.info("[REMINDER SERVICE] Auto-recovered scheduled time for booking %s: %s", u_bk.id, recovered_dt)
+
+        # 2. Query bookings within reminder window
         query = db.query(BookingDB).filter(
             or_(BookingDB.reminder_sent == False, BookingDB.reminder_sent.is_(None)),
             BookingDB.scheduled_at.isnot(None),
@@ -102,10 +143,15 @@ def check_and_dispatch_reminders() -> int:
                 if not booking.meet_link or not booking.meet_link.strip():
                     booking.meet_link = meet_url
 
+                # Normalize naive scheduled_at
+                sched_dt = booking.scheduled_at
+                if hasattr(sched_dt, "tzinfo") and sched_dt.tzinfo is not None:
+                    sched_dt = sched_dt.replace(tzinfo=None)
+
                 # Format human readable time with accurate IST timezone indicator
-                time_str = booking.scheduled_at.strftime("%b %d, %Y at %I:%M %p IST")
+                time_str = sched_dt.strftime("%b %d, %Y at %I:%M %p IST")
                 logger.info(
-                    "Dispatching 15m session reminder to %s for booking %s (Meet: %s, Scheduled: %s)",
+                    "Dispatching session reminder to %s for booking %s (Meet: %s, Scheduled: %s)",
                     booking.email,
                     booking.id,
                     meet_url,
@@ -125,9 +171,9 @@ def check_and_dispatch_reminders() -> int:
                     booking.reminder_sent = True
                     db.commit()
                     dispatched_count += 1
-                    logger.info("Successfully delivered 15m reminder to %s [%s]", booking.email, booking.id)
+                    logger.info("Successfully delivered reminder to %s [%s]", booking.email, booking.id)
 
-                    # Also notify Admin 10-15 min prior if different email
+                    # Also notify Admin prior if different email
                     try:
                         admin_email = (settings.ADMIN_EMAIL or "").strip()
                         if admin_email and admin_email.lower() != booking.email.lower():
@@ -172,7 +218,7 @@ def dispatch_single_reminder(booking_id: str, db: Session, force: bool = False) 
     if not booking.meet_link:
         booking.meet_link = meet_url
 
-    scheduled_dt = booking.scheduled_at or get_current_ist_time()
+    scheduled_dt = booking.scheduled_at or parse_datetime_from_notes(booking.notes) or get_current_ist_time()
     time_str = scheduled_dt.strftime("%b %d, %Y at %I:%M %p IST")
 
     success = send_session_reminder_email(
@@ -186,6 +232,9 @@ def dispatch_single_reminder(booking_id: str, db: Session, force: bool = False) 
 
     if success:
         booking.reminder_sent = True
+        booking.meet_link = meet_url
+        if not booking.scheduled_at:
+            booking.scheduled_at = scheduled_dt
         db.commit()
         return True, f"Reminder email successfully dispatched to {booking.email}."
     else:
@@ -196,7 +245,7 @@ def get_reminder_queue_status(db: Session) -> Dict[str, Any]:
     """Returns overview diagnostics on upcoming sessions and reminder readiness."""
     now = get_current_ist_time()
     next_24h = now + timedelta(hours=24)
-    next_15m = now + timedelta(minutes=16)
+    next_30m = now + timedelta(minutes=25)
 
     upcoming_24h = db.query(BookingDB).filter(
         BookingDB.scheduled_at.isnot(None),
@@ -208,8 +257,8 @@ def get_reminder_queue_status(db: Session) -> Dict[str, Any]:
     due_now = db.query(BookingDB).filter(
         or_(BookingDB.reminder_sent == False, BookingDB.reminder_sent.is_(None)),
         BookingDB.scheduled_at.isnot(None),
-        BookingDB.scheduled_at >= now - timedelta(minutes=45),
-        BookingDB.scheduled_at <= next_15m,
+        BookingDB.scheduled_at >= now - timedelta(hours=3),
+        BookingDB.scheduled_at <= next_30m,
         ~BookingDB.status.ilike("cancelled")
     ).count()
 
@@ -222,14 +271,20 @@ def get_reminder_queue_status(db: Session) -> Dict[str, Any]:
     }
 
 
-async def reminder_worker_loop(interval_seconds: int = 60):
+async def reminder_worker_loop(interval_seconds: int = 30):
     """
     Continuous background loop that checks for upcoming consultation reminders
-    every interval_seconds (default 60 seconds).
+    every interval_seconds (default 30 seconds). Self-healing on any unexpected exceptions.
     """
     global _SCHEDULER_RUNNING
     _SCHEDULER_RUNNING = True
     logger.info("[REMINDER SCHEDULER] Automated session reminder worker started (Interval: %ds)", interval_seconds)
+
+    # Run immediate check at startup
+    try:
+        await asyncio.to_thread(check_and_dispatch_reminders)
+    except Exception as init_err:
+        logger.warning("[REMINDER SCHEDULER] Initial sweep notice: %s", init_err)
 
     while _SCHEDULER_RUNNING:
         try:
@@ -241,7 +296,10 @@ async def reminder_worker_loop(interval_seconds: int = 60):
             logger.error("[REMINDER SCHEDULER] Loop execution error: %s", loop_err)
 
         # Wait before next scan
-        await asyncio.sleep(interval_seconds)
+        try:
+            await asyncio.sleep(interval_seconds)
+        except asyncio.CancelledError:
+            break
 
 
 def stop_reminder_scheduler():
