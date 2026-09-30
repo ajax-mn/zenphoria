@@ -19,8 +19,6 @@ import {
   Award,
   Send,
   ExternalLink,
-  MessageSquare,
-  Clock,
   CheckCircle2,
   HelpCircle
 } from 'lucide-react';
