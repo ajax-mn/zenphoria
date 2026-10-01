@@ -37,12 +37,33 @@ def verify_admin_auth(authorization: Optional[str] = Header(None)):
         detail="Invalid or expired admin session token."
     )
 
+import hashlib
+from fastapi import APIRouter, Depends, HTTPException, Header, Request, status
+from app.core.rate_limit import check_rate_limit
+
+
+def verify_password(provided: str, stored: str) -> bool:
+    """Verifies password using constant-time comparison, supporting both direct and SHA-256 hashed values."""
+    provided_clean = provided.strip()
+    stored_clean = stored.strip()
+    if secrets.compare_digest(provided_clean, stored_clean):
+        return True
+    # Also support SHA-256 hashed values for enhanced security
+    provided_hash = hashlib.sha256(provided_clean.encode()).hexdigest()
+    if secrets.compare_digest(provided_hash, stored_clean):
+        return True
+    return False
+
+
 @router.post("/login", response_model=AdminLoginResponse)
-async def admin_login(payload: AdminLoginRequest):
-    """Authenticate admin credentials with configured username and password."""
-    # Constant-time comparison for security
+async def admin_login(payload: AdminLoginRequest, request: Request):
+    """Authenticate admin credentials with rate limiting and constant-time password verification."""
+    # 1. Enforce rate limiting: max 5 login attempts per 60 seconds per IP
+    check_rate_limit(request, max_requests=5, window_seconds=60, action="admin_login")
+
+    # 2. Constant-time comparison for security
     user_match = secrets.compare_digest(payload.username.strip(), settings.ADMIN_USERNAME.strip())
-    pass_match = secrets.compare_digest(payload.password.strip(), settings.ADMIN_PASSWORD.strip())
+    pass_match = verify_password(payload.password, settings.ADMIN_PASSWORD)
 
     if not (user_match and pass_match):
         raise HTTPException(
@@ -50,7 +71,7 @@ async def admin_login(payload: AdminLoginRequest):
             detail="Invalid administrator username or password."
         )
 
-    # Generate session token
+    # Generate cryptographically secure session token
     session_token = f"adm_sec_{secrets.token_hex(24)}"
     ACTIVE_ADMIN_TOKENS.add(session_token)
 

@@ -59,9 +59,15 @@ async def create_booking(
 
     return entry
 
+from app.api.endpoints.admin import verify_admin_auth
+
+
 @router.get("/bookings", response_model=List[BookingResponse])
 @router.get("/waiting-list", response_model=List[BookingResponse])
-async def list_bookings(db: Session = Depends(get_db)):
-    """Retrieve all bookings from Neon database."""
+async def list_bookings(
+    authenticated: bool = Depends(verify_admin_auth),
+    db: Session = Depends(get_db)
+):
+    """Retrieve all bookings from Neon database (Admin authorized only)."""
     entries = db.query(BookingDB).order_by(BookingDB.created_at.desc()).all()
     return entries

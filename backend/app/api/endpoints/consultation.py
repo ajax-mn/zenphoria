@@ -60,8 +60,14 @@ async def submit_consultation_preference(
     return entry
 
 
+from app.api.endpoints.admin import verify_admin_auth
+
+
 @router.get("", response_model=List[BookingResponse])
-async def get_consultations(db: Session = Depends(get_db)):
-    """Retrieve consultation bookings from Neon bookings table."""
+async def get_consultations(
+    authenticated: bool = Depends(verify_admin_auth),
+    db: Session = Depends(get_db)
+):
+    """Retrieve consultation bookings from Neon bookings table (Admin authorized only)."""
     entries = db.query(BookingDB).order_by(BookingDB.created_at.desc()).all()
     return entries

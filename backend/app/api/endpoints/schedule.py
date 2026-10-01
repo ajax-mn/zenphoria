@@ -27,6 +27,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Consultation Scheduling"])
 
 
+from fastapi import APIRouter, Depends, HTTPException, Request, status, BackgroundTasks
+from app.core.rate_limit import check_rate_limit
+
+
 @router.post(
     "/schedule-consultation",
     response_model=ScheduleConsultationResponse,
@@ -36,12 +40,16 @@ router = APIRouter(tags=["Consultation Scheduling"])
 async def schedule_consultation(
     payload: ScheduleConsultationRequest,
     background_tasks: BackgroundTasks,
+    request: Request,
     db: Session = Depends(get_db)
 ):
     """
     Accepts client details and preferred date/time, creates a Google Calendar event
     with an automated Google Meet video link, and sends calendar invitations.
     """
+    # Bot and abuse protection: max 10 booking requests per 60 seconds per IP
+    check_rate_limit(request, max_requests=10, window_seconds=60, action="schedule_consultation")
+
     # 1. Create Google Calendar Event with Google Meet link
     try:
         event_data = create_consultation_event(
