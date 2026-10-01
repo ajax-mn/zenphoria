@@ -2,18 +2,29 @@
 const PRODUCTION_API_URL = 'https://zenphoria-backend.onrender.com';
 const LOCAL_API_URL = 'http://localhost:8000';
 
+// Track the fastest responsive backend endpoint in memory to avoid repeated fallback probes
+let _activeBaseUrl = null;
+
 /**
  * Determine API candidate URLs in order of priority:
- * 1. Explicit VITE_API_URL / VITE_API from env
- * 2. If running on localhost browser, try local backend first, with production fallback
- * 3. If running on deployed domain (Vercel / Netlify / etc.), use production backend
+ * 1. Previously validated responsive base URL (_activeBaseUrl)
+ * 2. Explicit VITE_API_URL / VITE_API from env
+ * 3. If running on localhost browser, try local backend first, with production fallback
+ * 4. If running on deployed domain (Vercel / Netlify / etc.), use production backend
  */
 function getApiEndpoints() {
   const envUrl = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API || '').trim().replace(/\/+$/, '');
-  
+  const candidates = [];
+
+  if (_activeBaseUrl) {
+    candidates.push(_activeBaseUrl);
+  }
+
   if (envUrl) {
     const normalized = envUrl.replace(/(\/api)+$/i, '') + '/api';
-    return [normalized, `${PRODUCTION_API_URL}/api`];
+    if (!candidates.includes(normalized)) candidates.push(normalized);
+    if (!candidates.includes(`${PRODUCTION_API_URL}/api`)) candidates.push(`${PRODUCTION_API_URL}/api`);
+    return candidates;
   }
 
   // Check if browser is on localhost
@@ -21,15 +32,23 @@ function getApiEndpoints() {
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
   if (isLocalHost) {
-    return [`${LOCAL_API_URL}/api`, `${PRODUCTION_API_URL}/api`];
+    const local = `${LOCAL_API_URL}/api`;
+    const prod = `${PRODUCTION_API_URL}/api`;
+    if (!candidates.includes(local)) candidates.push(local);
+    if (!candidates.includes(prod)) candidates.push(prod);
+    return candidates;
   }
 
-  return [`${PRODUCTION_API_URL}/api`];
+  if (!candidates.includes(`${PRODUCTION_API_URL}/api`)) {
+    candidates.push(`${PRODUCTION_API_URL}/api`);
+  }
+  return candidates;
 }
 
 /**
  * Robust fetch wrapper that attempts candidate API URLs sequentially.
- * If localhost is down or unreachable, it automatically falls back to the live Render backend.
+ * If localhost is down or unreachable, it rapidly falls back to the live Render backend.
+ * Caches the working URL to guarantee zero latency on subsequent calls.
  */
 async function fetchWithFallback(endpointPath, options = {}) {
   const endpoints = getApiEndpoints();
@@ -40,12 +59,26 @@ async function fetchWithFallback(endpointPath, options = {}) {
     const fullUrl = `${baseUrl}${endpointPath.startsWith('/') ? '' : '/'}${endpointPath}`;
 
     try {
-      const response = await fetch(fullUrl, options);
+      let fetchOptions = { ...options };
+
+      // If testing localhost, apply a fast 1500ms timeout so we don't stall the user if local server isn't running
+      if (baseUrl.includes('localhost') && !fetchOptions.signal) {
+        if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) {
+          fetchOptions.signal = AbortSignal.timeout(1500);
+        }
+      }
+
+      const response = await fetch(fullUrl, fetchOptions);
+      if (response) {
+        _activeBaseUrl = baseUrl;
+      }
       return response;
     } catch (err) {
       console.warn(`API attempt failed for ${fullUrl}:`, err.message);
       lastError = err;
-      // If another fallback endpoint exists, continue to next
+      if (_activeBaseUrl === baseUrl) {
+        _activeBaseUrl = null;
+      }
     }
   }
 

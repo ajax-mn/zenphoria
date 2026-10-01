@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -35,6 +35,7 @@ router = APIRouter(tags=["Consultation Scheduling"])
 )
 async def schedule_consultation(
     payload: ScheduleConsultationRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
     """
@@ -104,13 +105,14 @@ async def schedule_consultation(
         db.add(db_entry)
         db.commit()
 
-        # 3. Send automated confirmation email with Google Meet link to client
+        # 3. Offload confirmation and admin notification emails to background tasks for zero UI latency
         try:
             from app.core.email import send_booking_confirmation_email, send_admin_booking_notification_email
             from app.core.config import settings
             time_display = scheduled_dt.strftime("%b %d, %Y at %I:%M %p")
             
-            send_booking_confirmation_email(
+            background_tasks.add_task(
+                send_booking_confirmation_email,
                 to_email=payload.client_email,
                 name=payload.client_name,
                 focus_area=payload.focus_area or "General Consultation",
@@ -119,11 +121,11 @@ async def schedule_consultation(
                 meet_link=meet_url,
                 scheduled_time_str=time_display
             )
-            logger.info("Sent booking confirmation email to %s for booking %s", payload.client_email, booking_id)
+            logger.info("Queued client confirmation email for %s in background tasks", payload.client_email)
 
-            # 4. Dispatch instant notification email to Admin with Meet link & client details
             admin_target = (settings.ADMIN_EMAIL or "zenphoria88@gmail.com").strip()
-            send_admin_booking_notification_email(
+            background_tasks.add_task(
+                send_admin_booking_notification_email,
                 admin_email=admin_target,
                 client_name=payload.client_name,
                 client_email=payload.client_email,
@@ -133,10 +135,10 @@ async def schedule_consultation(
                 booking_id=booking_id,
                 notes=payload.notes or ""
             )
-            logger.info("Sent admin booking notification email to %s for booking %s", admin_target, booking_id)
+            logger.info("Queued admin booking notification email for %s in background tasks", admin_target)
 
         except Exception as mail_err:
-            logger.warning("Failed to dispatch confirmation/admin email: %s", mail_err)
+            logger.warning("Failed to queue confirmation/admin email: %s", mail_err)
 
     except Exception as db_err:
         # Non-fatal DB logging; the calendar event has already been successfully created

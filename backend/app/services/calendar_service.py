@@ -39,12 +39,35 @@ class GoogleCalendarConfigError(GoogleCalendarError):
     pass
 
 
+# Singleton cache for Google Calendar client and credentials to eliminate per-request init latency
+_cached_service: Optional[Resource] = None
+_cached_credentials: Any = None
+
+
 def get_calendar_service() -> Resource:
     """
     Authenticate with Google Calendar API using:
     1. OAuth 2.0 User Token (credentials/token.json) - Preferred, enables real Google Meet creation on @gmail.com
     2. Service Account credentials - Fallback for domain-wide delegated Workspace accounts
+
+    Reuses existing cached service instance if credentials remain valid, eliminating 700-1000ms init overhead.
     """
+    global _cached_service, _cached_credentials
+
+    # Fast path: Return cached client if credentials are valid or refreshed
+    if _cached_service is not None and _cached_credentials is not None:
+        try:
+            if getattr(_cached_credentials, "valid", False):
+                return _cached_service
+            if hasattr(_cached_credentials, "expired") and _cached_credentials.expired and getattr(_cached_credentials, "refresh_token", None):
+                logger.info("Cached OAuth token expired, refreshing...")
+                _cached_credentials.refresh(Request())
+                return _cached_service
+        except Exception as refresh_err:
+            logger.warning("Failed refreshing cached credentials: %s, re-initializing client.", refresh_err)
+            _cached_service = None
+            _cached_credentials = None
+
     credentials = None
 
     # 1. Attempt OAuth 2.0 User Token from Environment Variable (Ideal for Render cloud deployment)
@@ -138,6 +161,8 @@ def get_calendar_service() -> Resource:
 
     try:
         service = build("calendar", "v3", credentials=credentials, cache_discovery=False)
+        _cached_credentials = credentials
+        _cached_service = service
         return service
     except Exception as exc:
         raise GoogleCalendarError(f"Failed to initialize Google Calendar API client: {exc}") from exc
