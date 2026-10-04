@@ -1,8 +1,13 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 from app.models.schemas import Article
+from app.services.ai_research_service import search_psychology_with_gemini
+from app.core.config import settings
 
 router = APIRouter(prefix="/articles", tags=["Journal & Publications"])
+
+# Global in-memory dynamic articles store
+DYNAMIC_ARTICLES: dict[str, Article] = {}
 
 ARTICLES_DATA: List[Article] = [
     Article(
@@ -76,21 +81,62 @@ In clinical psychology, this phenomenon is not a failure of character, but rathe
 @router.get("", response_model=List[Article])
 async def get_articles(
     topic: Optional[str] = Query(None, description="Filter by topic"),
-    search: Optional[str] = Query(None, description="Search keyword in title or excerpt")
+    search: Optional[str] = Query(None, description="Search keyword in title or excerpt"),
+    use_ai: Optional[bool] = Query(False, description="Whether to trigger Gemini AI deep synthesis")
 ):
-    """Retrieve journal articles with optional topic and search filtering."""
-    results = ARTICLES_DATA
+    """Retrieve journal articles with optional topic, search filtering, and Gemini AI synthesis."""
+    # Combine static and dynamically synthesized articles
+    all_articles = ARTICLES_DATA + list(DYNAMIC_ARTICLES.values())
+    results = all_articles
+
     if topic and topic != "All Topics":
         results = [a for a in results if a.topic.lower() == topic.lower()]
+    
     if search:
-        s = search.lower()
-        results = [a for a in results if s in a.title.lower() or s in a.excerpt.lower() or s in a.content.lower()]
+        s = search.lower().strip()
+        matched = [a for a in results if s in a.title.lower() or s in a.excerpt.lower() or s in a.content.lower()]
+        
+        # If user explicitly requested AI synthesis or search results are sparse, trigger Gemini AI
+        if (use_ai or len(matched) == 0) and settings.GEMINI_API_KEY and len(s) >= 3:
+            try:
+                ai_results = search_psychology_with_gemini(query=search, topic=topic)
+                for item in ai_results:
+                    art = Article(**item)
+                    DYNAMIC_ARTICLES[art.id] = art
+                    if art.id not in [m.id for m in matched]:
+                        matched.insert(0, art)
+            except Exception as err:
+                print(f"[AI Search Router] Gemini query skipped: {err}")
+        
+        results = matched
+
     return results
+
+@router.get("/ai-search", response_model=List[Article])
+async def ai_search_articles(
+    query: str = Query(..., min_length=2, description="Psychology search query"),
+    topic: Optional[str] = Query(None, description="Optional topic filter")
+):
+    """Direct AI synthesis endpoint for psychology queries."""
+    if not settings.GEMINI_API_KEY:
+        # Fallback to local search if no key configured
+        return await get_articles(topic=topic, search=query, use_ai=False)
+
+    ai_results = search_psychology_with_gemini(query=query, topic=topic)
+    parsed = []
+    for item in ai_results:
+        art = Article(**item)
+        DYNAMIC_ARTICLES[art.id] = art
+        parsed.append(art)
+    return parsed
 
 @router.get("/{article_id}", response_model=Article)
 async def get_article(article_id: str):
     """Retrieve a single article by ID."""
+    if article_id in DYNAMIC_ARTICLES:
+        return DYNAMIC_ARTICLES[article_id]
     for a in ARTICLES_DATA:
         if a.id == article_id:
             return a
     raise HTTPException(status_code=404, detail="Article not found")
+

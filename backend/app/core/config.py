@@ -29,6 +29,10 @@ class Settings:
     ADMIN_CALENDAR_ID: str = os.getenv("ADMIN_CALENDAR_ID", "primary")
     CALENDAR_TIMEZONE: str = os.getenv("CALENDAR_TIMEZONE", "Asia/Kolkata")
 
+    # Gemini AI Configuration for Psychology & Clinical Research Synthesis
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "").strip() or os.getenv("GOOGLE_API_KEY", "").strip()
+
+
     CORS_ORIGINS: list[str] = [
         "http://localhost:5173",
         "http://localhost:3000",

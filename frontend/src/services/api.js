@@ -151,12 +151,13 @@ export const api = {
     }
   },
 
-  // Fetch articles from backend
-  async getArticles(topic = '', search = '') {
+  // Fetch articles from backend with optional AI deep search
+  async getArticles(topic = '', search = '', useAi = false) {
     try {
       const params = new URLSearchParams();
       if (topic && topic !== 'All Topics') params.append('topic', topic);
       if (search) params.append('search', search);
+      if (useAi) params.append('use_ai', 'true');
 
       const queryStr = params.toString() ? `?${params.toString()}` : '';
       const res = await fetchWithFallback(`/articles${queryStr}`);
@@ -166,6 +167,24 @@ export const api = {
       return await res.json();
     } catch (err) {
       console.warn('Backend unavailable, fallback to local data:', err);
+      return null;
+    }
+  },
+
+  // Direct AI psychology search & synthesis
+  async aiSearchArticles(query, topic = '') {
+    try {
+      const params = new URLSearchParams();
+      params.append('query', query);
+      if (topic && topic !== 'All Topics') params.append('topic', topic);
+
+      const res = await fetchWithFallback(`/articles/ai-search?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      return await res.json();
+    } catch (err) {
+      console.warn('AI search error, falling back:', err);
       return null;
     }
   },

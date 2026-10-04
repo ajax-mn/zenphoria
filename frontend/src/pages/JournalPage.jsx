@@ -1,23 +1,60 @@
-import React, { useState } from 'react';
-import { Search, ArrowUpRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, ArrowUpRight, Sparkles, Loader2, BookOpen } from 'lucide-react';
 import { ARTICLES_DATA } from '../data/zenphoriaData';
+import { api } from '../services/api';
 
 export default function JournalPage({ onSelectArticle }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTopic, setActiveTopic] = useState('All Topics');
+  const [articlesList, setArticlesList] = useState(ARTICLES_DATA);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiSearchTriggered, setAiSearchTriggered] = useState(false);
 
   const topics = ['All Topics', 'Clinical Frameworks', 'Mindfulness', 'Cognitive Load'];
 
-  const featuredArticle = ARTICLES_DATA.find(a => a.id === 'architecture-of-empathy') || ARTICLES_DATA[0];
+  // Load articles on mount or topic change
+  useEffect(() => {
+    let isMounted = true;
+    api.getArticles(activeTopic, '').then(res => {
+      if (isMounted && res && Array.isArray(res) && res.length > 0) {
+        setArticlesList(res);
+      }
+    });
+    return () => { isMounted = false; };
+  }, [activeTopic]);
 
-  const filteredArticles = ARTICLES_DATA.filter((art) => {
-    if (art.id === featuredArticle.id && !searchQuery) return false; // Show in featured if no active search
-    const matchesSearch = 
-      art.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      art.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      art.topic.toLowerCase().includes(searchQuery.toLowerCase());
+  // Execute AI search on user submit or manual trigger
+  const handleAiSearch = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!searchQuery.trim()) return;
+
+    setIsAiLoading(true);
+    setAiSearchTriggered(true);
+    try {
+      const res = await api.getArticles(activeTopic, searchQuery, true);
+      if (res && Array.isArray(res) && res.length > 0) {
+        setArticlesList(res);
+      }
+    } catch (err) {
+      console.warn('AI search error:', err);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const featuredArticle = articlesList.find(a => a.id === 'architecture-of-empathy') || articlesList[0];
+
+  const filteredArticles = articlesList.filter((art) => {
+    if (!art) return false;
+    if (art.id === featuredArticle?.id && !searchQuery) return false; // Show in featured if no active search
     
-    const matchesTopic = activeTopic === 'All Topics' || art.topic === activeTopic;
+    const s = searchQuery.toLowerCase().trim();
+    const matchesSearch = !s ||
+      (art.title && art.title.toLowerCase().includes(s)) || 
+      (art.excerpt && art.excerpt.toLowerCase().includes(s)) ||
+      (art.topic && art.topic.toLowerCase().includes(s));
+    
+    const matchesTopic = activeTopic === 'All Topics' || (art.topic && art.topic.toLowerCase() === activeTopic.toLowerCase());
 
     return matchesSearch && matchesTopic;
   });
@@ -31,17 +68,53 @@ export default function JournalPage({ onSelectArticle }) {
           Explore our curated collection of clinical insights, psychological frameworks, and mindful practices designed for the modern professional.
         </p>
 
-        {/* Search Input */}
-        <div className="journal-search-wrap">
+        {/* Search Input with AI Trigger */}
+        <form onSubmit={handleAiSearch} className="journal-search-wrap" style={{ position: 'relative' }}>
           <Search size={18} className="journal-search-icon" />
           <input
             type="text"
             className="journal-search-input"
-            placeholder="Search articles, topics, or authors..."
+            placeholder="Search clinical topics, psychology research, or ask AI..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
+          {searchQuery.trim().length > 0 && (
+            <button
+              type="submit"
+              disabled={isAiLoading}
+              style={{
+                position: 'absolute',
+                right: '8px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.45rem 0.9rem',
+                borderRadius: '9999px',
+                backgroundColor: '#344034',
+                color: '#FFFFFF',
+                border: 'none',
+                fontSize: '0.825rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {isAiLoading ? (
+                <>
+                  <Loader2 size={13} className="spin-animate" />
+                  <span>Synthesizing...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles size={13} style={{ color: '#A3D9A5' }} />
+                  <span>AI Search</span>
+                </>
+              )}
+            </button>
+          )}
+        </form>
 
         {/* Filter Pills */}
         <div className="topic-pills-row">
@@ -58,7 +131,7 @@ export default function JournalPage({ onSelectArticle }) {
       </section>
 
       {/* Featured Insight Card */}
-      {(!searchQuery || featuredArticle.title.toLowerCase().includes(searchQuery.toLowerCase())) && activeTopic === 'All Topics' && (
+      {featuredArticle && (!searchQuery || (featuredArticle.title && featuredArticle.title.toLowerCase().includes(searchQuery.toLowerCase()))) && activeTopic === 'All Topics' && (
         <div 
           className="featured-journal-card"
           onClick={() => onSelectArticle(featuredArticle)}
@@ -82,15 +155,25 @@ export default function JournalPage({ onSelectArticle }) {
 
       {/* Recent Publications */}
       <section className="section-container" style={{ marginTop: '36px' }}>
-        <div className="section-header">
+        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 className="section-title">
-            Recent Publications
+            {aiSearchTriggered && searchQuery ? 'Search & AI Synthesized Research' : 'Recent Publications'}
           </h2>
+          {isAiLoading && (
+            <span style={{ fontSize: '0.85rem', color: '#566956', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Loader2 size={14} className="spin-animate" />
+              Analyzing clinical literature...
+            </span>
+          )}
         </div>
 
         {filteredArticles.length === 0 ? (
-          <div className="empty-state-box">
-            No articles found matching your criteria.
+          <div className="empty-state-box" style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+            <BookOpen size={32} style={{ margin: '0 auto 1rem auto', color: '#788378' }} />
+            <p style={{ fontWeight: 600, fontSize: '1.05rem', color: '#2B372B' }}>No clinical articles found</p>
+            <p style={{ color: '#788378', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+              Click <strong>AI Search</strong> above to synthesize new clinical research papers for "{searchQuery}".
+            </p>
           </div>
         ) : (
           <div className="publications-grid">
@@ -102,6 +185,27 @@ export default function JournalPage({ onSelectArticle }) {
               >
                 <div className="publication-img-wrap">
                   <img src={art.image} alt={art.title} />
+                  {art.is_ai_generated && (
+                    <span style={{
+                      position: 'absolute',
+                      top: '10px',
+                      left: '10px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.3rem',
+                      padding: '0.25rem 0.6rem',
+                      borderRadius: '9999px',
+                      backgroundColor: 'rgba(32, 40, 32, 0.85)',
+                      backdropFilter: 'blur(8px)',
+                      color: '#B4E6B4',
+                      fontSize: '0.72rem',
+                      fontWeight: 600,
+                      letterSpacing: '0.03em',
+                    }}>
+                      <Sparkles size={11} />
+                      AI SYNTHESIS
+                    </span>
+                  )}
                 </div>
                 <div className="publication-body">
                   <div className="publication-meta">
@@ -126,3 +230,4 @@ export default function JournalPage({ onSelectArticle }) {
     </div>
   );
 }
+
