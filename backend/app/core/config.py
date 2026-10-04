@@ -32,6 +32,9 @@ class Settings:
     # Gemini AI Configuration for Psychology & Clinical Research Synthesis
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "").strip() or os.getenv("GOOGLE_API_KEY", "").strip()
 
+    # Tavily Web Search API (Fallback for clinical psychology web literature)
+    TAVILY_API_KEY: str = os.getenv("TAVILY_API_KEY", "").strip()
+
 
     CORS_ORIGINS: list[str] = [
         "http://localhost:5173",

@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
 from app.models.schemas import Article
-from app.services.ai_research_service import search_psychology_with_gemini
-from app.core.config import settings
+from app.services.ai_research_service import search_psychology_articles, get_gemini_api_key, get_tavily_api_key
 
 router = APIRouter(prefix="/articles", tags=["Journal & Publications"])
 
@@ -96,17 +95,18 @@ async def get_articles(
         s = search.lower().strip()
         matched = [a for a in results if s in a.title.lower() or s in a.excerpt.lower() or s in a.content.lower()]
         
-        # If user explicitly requested AI synthesis or search results are sparse, trigger Gemini AI
-        if (use_ai or len(matched) == 0) and settings.GEMINI_API_KEY and len(s) >= 3:
+        # If user explicitly requested AI synthesis or search results are sparse, trigger AI Search (Gemini -> Tavily)
+        has_ai_provider = bool(get_gemini_api_key() or get_tavily_api_key())
+        if (use_ai or len(matched) == 0) and has_ai_provider and len(s) >= 3:
             try:
-                ai_results = search_psychology_with_gemini(query=search, topic=topic)
+                ai_results = search_psychology_articles(query=search, topic=topic)
                 for item in ai_results:
                     art = Article(**item)
                     DYNAMIC_ARTICLES[art.id] = art
                     if art.id not in [m.id for m in matched]:
                         matched.insert(0, art)
             except Exception as err:
-                print(f"[AI Search Router] Gemini query skipped: {err}")
+                print(f"[AI Search Router] Query skipped: {err}")
         
         results = matched
 
@@ -117,18 +117,19 @@ async def ai_search_articles(
     query: str = Query(..., min_length=2, description="Psychology search query"),
     topic: Optional[str] = Query(None, description="Optional topic filter")
 ):
-    """Direct AI synthesis endpoint for psychology queries."""
-    if not settings.GEMINI_API_KEY:
-        # Fallback to local search if no key configured
+    """Direct AI synthesis endpoint for psychology queries with Tavily fallback."""
+    if not (get_gemini_api_key() or get_tavily_api_key()):
+        # Fallback to local search if neither key is configured
         return await get_articles(topic=topic, search=query, use_ai=False)
 
-    ai_results = search_psychology_with_gemini(query=query, topic=topic)
+    ai_results = search_psychology_articles(query=query, topic=topic)
     parsed = []
     for item in ai_results:
         art = Article(**item)
         DYNAMIC_ARTICLES[art.id] = art
         parsed.append(art)
     return parsed
+
 
 @router.get("/{article_id}", response_model=Article)
 async def get_article(article_id: str):

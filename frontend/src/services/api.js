@@ -61,10 +61,11 @@ async function fetchWithFallback(endpointPath, options = {}) {
     try {
       let fetchOptions = { ...options };
 
-      // If testing localhost, apply a fast 1500ms timeout so we don't stall the user if local server isn't running
+      // For AI synthesis requests, allow 15s; for standard quick localhost probes, allow 4s
+      const isAiRequest = endpointPath.includes('use_ai') || endpointPath.includes('ai-search');
       if (baseUrl.includes('localhost') && !fetchOptions.signal) {
         if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) {
-          fetchOptions.signal = AbortSignal.timeout(1500);
+          fetchOptions.signal = AbortSignal.timeout(isAiRequest ? 15000 : 4000);
         }
       }
 
