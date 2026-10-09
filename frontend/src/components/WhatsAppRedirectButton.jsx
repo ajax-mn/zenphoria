@@ -12,7 +12,7 @@ import { MessageCircle } from 'lucide-react';
  */
 export default function WhatsAppRedirectButton({
   clientName = '',
-  phoneNumber = '917902757042', // International format with country code 91 (India)
+  phoneNumber = import.meta.env.VITE_WHATSAPP_PHONE || '918590844604',
   customMessage = '',
   className = ''
 }) {
